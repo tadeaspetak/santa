@@ -1,0 +1,35 @@
+{
+  "mailgun": {
+    "domain": "mg.johndoe.me",
+    "apiKey": "XXX"
+  },
+  "email": {
+    "sender": "secret@reindeer.com",
+    "subject": "Secretly reindeering",
+    "body": "<p>Hi</p><p>Come up with something lovely for %{receiverSalutation}.</p><p>Happy hunting,<br/>Your secret reindeer</p>"
+  },
+  "participants": [
+    {
+      "id": 1,
+      "email": "john@doe.com",
+      "salutation": "John",
+      "excludedPersonIds": [2]
+    },
+    {
+      "id": 2,
+      "email": "jane@doe.com",
+      "salutation": "Jane",
+      "excludedPersonIds": [1]
+    },
+    {
+      "id": 3,
+      "email": "joshua@doe.com",
+      "salutation": "Joshua"
+    },
+    {
+      "id": 4,
+      "email": "janette@doe.com",
+      "salutation": "Janette"
+    }
+  ]
+}
