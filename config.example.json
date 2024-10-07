@@ -1,4 +1,5 @@
 {
+  "isDebug": true,
   "mailgun": {
     "domain": "mg.johndoe.me",
     "apiKey": "XXX"

@@ -7,39 +7,37 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/mailgun/mailgun-go/v4"
+	"github.com/tadeaspetak/secret-santa-go/internal/config"
+	"github.com/tadeaspetak/secret-santa-go/internal/utils"
 )
 
-var IS_DEBUG = true
-var validate *validator.Validate
-
 type pair struct {
-	giver    Participant
-	receiver Participant
+	giver    config.Participant
+	receiver config.Participant
 }
 
-func raffle(people []Participant) []pair {
-	potentialReceivers := make([]Participant, len(people))
-	copy(potentialReceivers, people)
+func raffle(participants []config.Participant, isDebug bool) []pair {
+	potentialReceivers := make([]config.Participant, len(participants))
+	copy(potentialReceivers, participants)
 
-	raffled := make([]pair, len(people))
-	for i, giver := range people {
+	raffled := make([]pair, len(participants))
+	for i, giver := range participants {
 		attemptCount := 0
-		receiverIndex := getRandomIndexInArray(potentialReceivers)
+		receiverIndex := utils.GetRandomIndexInArray(potentialReceivers)
 		receiver := potentialReceivers[receiverIndex]
 
 		// ensure the receiver is not the giver, and also not in the excluded people for the giver
-		for giver.Id == receiver.Id || contains(giver.ExcludedPersonIds, receiver.Id) {
+		for giver.ID == receiver.ID || utils.Contains(giver.ExcludedPersonIds, receiver.ID) {
 			if attemptCount >= 5 {
-				if IS_DEBUG {
+				if isDebug {
 					log.Println("Too many failed attempts to pick a receiver, let's start anew.")
 				}
-				return raffle(people)
+				return raffle(participants, isDebug)
 			}
-			attemptCount += 1
+			attemptCount++
 
-			receiverIndex = getRandomIndexInArray(potentialReceivers)
+			receiverIndex = utils.GetRandomIndexInArray(potentialReceivers)
 			receiver = potentialReceivers[receiverIndex]
 		}
 
@@ -54,13 +52,12 @@ func raffle(people []Participant) []pair {
 }
 
 func main() {
-	validate = validator.New()
 
-	config := loadConfig()
-	mg := mailgun.NewMailgun(config.Mailgun.Domain, config.Mailgun.ApiKey)
+	config := config.LoadConfig()
+	mg := mailgun.NewMailgun(config.Mailgun.Domain, config.Mailgun.APIKey)
 	mg.SetAPIBase("https://api.eu.mailgun.net/v3")
 
-	raffled := raffle(config.Participants)
+	raffled := raffle(config.Participants, config.IsDebug)
 	for _, pair := range raffled {
 		// prefer the email provided in the config (for testing purposes)
 		recipient := config.Email.Recipient
@@ -75,7 +72,7 @@ func main() {
 		body := replacer.Replace(fmt.Sprintf(`<html><body>%s</body></html>`, config.Email.Body))
 		message.SetHtml(body)
 
-		if IS_DEBUG {
+		if config.IsDebug {
 			fmt.Printf("%s -> %s, recipient: %s\n", pair.giver.Email, pair.receiver.Salutation, recipient)
 			fmt.Printf("%s\n\n", body)
 

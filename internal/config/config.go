@@ -1,18 +1,23 @@
-package main
+package config
 
 import (
 	"encoding/json"
 	"io"
 	"log"
 	"os"
+
+	"github.com/go-playground/validator"
 )
 
+// Config for the app
 type Config struct {
+	IsDebug      bool          `json:"isDebug"`
 	Email        Email         `json:"email"`
 	Mailgun      Mailgun       `json:"mailgun"`
 	Participants []Participant `json:"participants" validate:"min=2,dive"`
 }
 
+// Email props for the email to be sent out
 type Email struct {
 	Body      string `json:"body" validate:"required"`
 	Recipient string `json:"recipient"`
@@ -20,19 +25,24 @@ type Email struct {
 	Subject   string `json:"subject" validate:"required"`
 }
 
+// Mailgun config
 type Mailgun struct {
 	Domain string `json:"domain" validate:"required"`
-	ApiKey string `json:"apiKey" validate:"required"`
+	APIKey string `json:"apiKey" validate:"required"`
 }
 
+// Participant definition
 type Participant struct {
-	Id                int    `json:"id" validate:"required"`
+	ID                int    `json:"id" validate:"required"`
 	Email             string `json:"email" validate:"required"`
 	Salutation        string `json:"salutation" validate:"required"`
 	ExcludedPersonIds []int  `json:"excludedPersonIds" validate:"required"`
 }
 
-func loadConfig() Config {
+// LoadConfig load configuration from a JSON file
+func LoadConfig() Config {
+	validate := validator.New()
+
 	jsonFile, err := os.Open("config.json")
 	if err != nil {
 		log.Fatal("Error loading config", err)
