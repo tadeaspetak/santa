@@ -6,7 +6,7 @@ import (
 
 func TestContains(t *testing.T) {
 	arr := []int{1, 2, 3}
-	found := 4
+	found := 3
 	if !Contains(arr, found) {
 		t.Fatalf(`%v contains %v, but not found`, arr, found)
 	}
