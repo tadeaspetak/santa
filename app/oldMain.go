@@ -1,34 +1,40 @@
-package main
+package appMain
 
 import (
 	"context"
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/mailgun/mailgun-go/v4"
-	"github.com/tadeaspetak/secret-santa-go/internal/config"
-	"github.com/tadeaspetak/secret-santa-go/internal/utils"
+	"github.com/tadeaspetak/secret-reindeer/internal/data"
+	"golang.org/x/exp/rand"
 )
 
-type pair struct {
-	giver    config.Participant
-	receiver config.Participant
+// gets a random index within a  given array
+func getRandomIndexInArray[T any](arr []T) int {
+	return rand.Intn(len(arr))
 }
 
-func raffle(participants []config.Participant, isDebug bool) []pair {
-	potentialReceivers := make([]config.Participant, len(participants))
+type pair struct {
+	giver    data.Participant
+	receiver data.Participant
+}
+
+func raffle(participants []data.Participant, isDebug bool) []pair {
+	potentialReceivers := make([]data.Participant, len(participants))
 	copy(potentialReceivers, participants)
 
 	raffled := make([]pair, len(participants))
 	for i, giver := range participants {
 		attemptCount := 0
-		receiverIndex := utils.GetRandomIndexInArray(potentialReceivers)
+		receiverIndex := getRandomIndexInArray(potentialReceivers)
 		receiver := potentialReceivers[receiverIndex]
 
 		// ensure the receiver is not the giver, and also not in the excluded people for the giver
-		for giver.ID == receiver.ID || utils.Contains(giver.ExcludedPersonIds, receiver.ID) {
+		for giver.Email == receiver.Email || slices.Index(giver.ExcludedRecipients, receiver.Email) > -1 {
 			if attemptCount >= 5 {
 				if isDebug {
 					log.Println("Too many failed attempts to pick a receiver, let's start anew.")
@@ -37,7 +43,7 @@ func raffle(participants []config.Participant, isDebug bool) []pair {
 			}
 			attemptCount++
 
-			receiverIndex = utils.GetRandomIndexInArray(potentialReceivers)
+			receiverIndex = getRandomIndexInArray(potentialReceivers)
 			receiver = potentialReceivers[receiverIndex]
 		}
 

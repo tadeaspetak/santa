@@ -1,3 +1,6 @@
 .DS_Store
-config.json
+data.json
+
+# built
 bin
+secret-reindeer

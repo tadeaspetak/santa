@@ -1,18 +1,18 @@
 package utils
 
-import "math/rand"
-
-// GetRandomIndexInArray gets a random index within the given array
-func GetRandomIndexInArray[K any](arr []K) int {
-	return rand.Intn(len(arr))
+// remove an element at a given index from a slice
+// while preserving order (https://stackoverflow.com/a/37335777/3844098).
+func RemoveFromSlice[K any](slice []K, index int) []K {
+	return append(slice[:index], slice[index+1:]...)
 }
 
-// Contains attempts to find a needle in the haystack
-func Contains[K comparable](haystack []K, needle K) bool {
-	for _, value := range haystack {
-		if value == needle {
-			return true
+func Filter[K any](slice []K, predicate func(item K) bool) []K {
+	result := []K{}
+	for _, item := range slice {
+		if predicate(item) {
+			result = append(result, item)
+
 		}
 	}
-	return false
+	return result
 }
