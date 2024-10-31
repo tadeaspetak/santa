@@ -6,10 +6,10 @@ func RemoveFromSlice[K any](slice []K, index int) []K {
 	return append(slice[:index], slice[index+1:]...)
 }
 
-func Filter[K any](slice []K, predicate func(item K) bool) []K {
+func Filter[K any](slice []K, predicate func(item K, i int) bool) []K {
 	result := []K{}
-	for _, item := range slice {
-		if predicate(item) {
+	for i, item := range slice {
+		if predicate(item, i) {
 			result = append(result, item)
 
 		}

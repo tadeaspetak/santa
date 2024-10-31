@@ -14,10 +14,9 @@ import (
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "add a participant",
-	Long:  `Add a participant.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmdData := data.LoadCmdData(cmd)
-		fmt.Println("Let's add a new participant!\n")
+		fmt.Println("Add a new participant!\n")
 
 		// collect the data
 		email := validation.SanitizeEmail(prompt.PromptStringNew("Email address"))

@@ -51,8 +51,8 @@ func PromptSelectParticipant(participants []data.Participant, selectedLabel stri
 
 	templates := &promptui.SelectTemplates{
 		Label:    "{{ . }}",
-		Active:   "👉 {{ .Email | cyan }} ({{ .Salutation }}, Excluded: {{ .ExcludedRecipients | stringsJoin }})",
-		Inactive: "   {{ .Email | cyan }} ({{ .Salutation }}, Excluded: {{ .ExcludedRecipients | stringsJoin }})",
+		Active:   "👉 {{ .Email | cyan }} ({{ .Salutation }}, Excluded: {{ .ExcludedRecipients | stringsJoin }}, Predestined: {{ .PredestinedRecipient }})",
+		Inactive: "   {{ .Email | cyan }} ({{ .Salutation }}, Excluded: {{ .ExcludedRecipients | stringsJoin }}, Predestined: {{ .PredestinedRecipient }})",
 		Selected: fmt.Sprintf("%s {{ .Email }}", selectedLabel),
 		FuncMap:  funcMap,
 	}
@@ -122,6 +122,6 @@ func PromptMultiSelect(items []PromptMultiSelectItem, selectedPosition int, labe
 		return PromptMultiSelect(items, index, label)
 	}
 
-	selectedItems := utils.Filter(items, func(i PromptMultiSelectItem) bool { return i.IsSelected })
+	selectedItems := utils.Filter(items, func(i PromptMultiSelectItem, _ int) bool { return i.IsSelected })
 	return selectedItems, nil
 }

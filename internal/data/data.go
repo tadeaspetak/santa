@@ -8,9 +8,10 @@ import (
 	"log"
 	"os"
 	"slices"
+	"strconv"
+	"strings"
 
 	"github.com/tadeaspetak/secret-reindeer/internal/utils"
-	"github.com/tadeaspetak/secret-reindeer/internal/validation"
 )
 
 // Data for the app
@@ -23,10 +24,9 @@ type Data struct {
 
 // Email props for the email to be sent out
 type Email struct {
-	Body      string `json:"body" validate:"required"`
-	Recipient string `json:"recipient,email"` // TODO: explain this
-	Sender    string `json:"sender" validate:"required,email"`
-	Subject   string `json:"subject" validate:"required"`
+	Body    string `json:"body" validate:"required"`
+	Sender  string `json:"sender" validate:"required,email"`
+	Subject string `json:"subject" validate:"required"`
 }
 
 // Mailgun config
@@ -37,9 +37,10 @@ type Mailgun struct {
 
 // Participant definition
 type Participant struct {
-	Email              string   `json:"email" validate:"required,email"`
-	Salutation         string   `json:"salutation" validate:"required"`
-	ExcludedRecipients []string `json:"excludedRecipients,omitempty"`
+	Email                string   `json:"email" validate:"required,email"`
+	Salutation           string   `json:"salutation" validate:"required"`
+	ExcludedRecipients   []string `json:"excludedRecipients,omitempty"`
+	PredestinedRecipient string   `json:"predestinedRecipient,omitempty"`
 }
 
 // TODO (ask): should this be a pointer or not? since the struct contains a slice, the copy of the struct
@@ -99,28 +100,29 @@ func LoadData(filePath string) Data {
 		log.Fatal(err)
 	}
 
-	// TODO: only validate on demqnd
-	err = validation.Validate.Struct(data)
-	if err != nil {
-		log.Fatal(data, err)
-	}
-
 	return data
+}
+
+func unescapeUnicodeCharactersInJSON(_jsonRaw json.RawMessage) (json.RawMessage, error) {
+	str, err := strconv.Unquote(strings.Replace(strconv.Quote(string(_jsonRaw)), `\\u`, `\u`, -1))
+	if err != nil {
+		return nil, err
+	}
+	return []byte(str), nil
 }
 
 // TODO (ask): should this be a method on `Data`? or is it better to stick to utils methods
 func SaveData(filePath string, data Data) {
-	// TODO: only validate on demand / when loading before sending (to allow partial data to exist)
-	err := validation.Validate.Struct(data)
-	if err != nil {
-		log.Fatal(data, err)
-	}
-
 	dataJson, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = os.WriteFile(filePath, dataJson, 0644)
+	unescapedDataJson, err := unescapeUnicodeCharactersInJSON(dataJson)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = os.WriteFile(filePath, unescapedDataJson, 0644)
 
 	if err != nil {
 		log.Fatal("Error writing data", err)

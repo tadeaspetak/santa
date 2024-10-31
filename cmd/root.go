@@ -5,7 +5,9 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/tadeaspetak/secret-reindeer/cmd/mailgun"
 	"github.com/tadeaspetak/secret-reindeer/cmd/participants"
+	"github.com/tadeaspetak/secret-reindeer/cmd/template"
 )
 
 var dataPath string
@@ -27,5 +29,7 @@ func Execute() {
 func init() {
 	RootCmd.PersistentFlags().StringVarP(&dataPath, "data", "d", "data.json", "data path")
 	RootCmd.AddCommand(participants.ParticipantsCmd)
+	RootCmd.AddCommand(mailgun.MailgunCmd)
+	RootCmd.AddCommand(template.TemplateCmd)
 
 }

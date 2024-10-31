@@ -13,9 +13,9 @@ import (
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "delete a participant",
-	Long:  `Delete a participant.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmdData := data.LoadCmdData(cmd)
+		fmt.Println("Delete a participant:\n")
 
 		// select a participant
 		participantIndex := prompt.PromptSelectParticipant(cmdData.Participants, "Deleting")

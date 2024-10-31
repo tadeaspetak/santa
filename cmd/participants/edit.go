@@ -15,6 +15,7 @@ const (
 	EditEmail = iota
 	EditSalutation
 	EditExcludedRecipients
+	EditPredestinedRecipient
 )
 
 type editAction struct {
@@ -34,6 +35,7 @@ func selectEditAction() (editActionID, error) {
 		{ID: EditEmail, Label: "Email"},
 		{ID: EditSalutation, Label: "Salutation"},
 		{ID: EditExcludedRecipients, Label: "Excluded participants"},
+		{ID: EditPredestinedRecipient, Label: "Predestined recipient"},
 	}
 
 	prompt := promptui.Select{
@@ -84,12 +86,51 @@ func editExcludedRecipients(participants []data.Participant, participantIndex in
 	return participants
 }
 
+type predestinedItem struct {
+	Label      string
+	IsSelected bool
+}
+
+func editPredestined(emails []string, selected string) int {
+	items := make([]predestinedItem, len(emails)+1)
+	for i, email := range emails {
+		items[i] = predestinedItem{Label: email, IsSelected: selected == email}
+	}
+	items[len(items)-1] = predestinedItem{Label: "Remove", IsSelected: false}
+
+	templates := &promptui.SelectTemplates{
+		Label:    `{{if .IsSelected}}✔ {{end}} {{ .Label }} - label`,
+		Active:   "→ {{if .IsSelected}}✔ {{end}}{{ .Label | cyan }}",
+		Inactive: "{{if .IsSelected}}✔ {{end}}{{ .Label | cyan }}",
+	}
+
+	prompt := promptui.Select{
+		Label:     "Select",
+		Items:     items,
+		Templates: templates,
+		Size:      5,
+	}
+
+	index, _, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return -2
+	}
+
+	if index == len(items)-1 {
+		return -1
+	}
+
+	return index
+}
+
 var editCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "edit a participant",
-	Long:  `Edit a participant.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmdData := data.LoadCmdData(cmd)
+		fmt.Println("Edit a aprticipant:\n")
 
 		for {
 			// select a participant
@@ -118,6 +159,20 @@ var editCmd = &cobra.Command{
 				participant.Salutation = salutation
 			case EditExcludedRecipients:
 				editExcludedRecipients(cmdData.Participants, participantIndex)
+			case EditPredestinedRecipient:
+				part := &cmdData.Participants[participantIndex]
+				available := make([]string, 0)
+				for i, p := range cmdData.Participants {
+					if i != participantIndex {
+						available = append(available, p.Email)
+					}
+				}
+				predestinedindex := editPredestined(available, part.PredestinedRecipient)
+				if predestinedindex == -1 {
+					part.PredestinedRecipient = ""
+				} else {
+					part.PredestinedRecipient = available[predestinedindex]
+				}
 			}
 
 			// save the data
