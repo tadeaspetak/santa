@@ -8,21 +8,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/tadeaspetak/secret-reindeer/internal/data"
-	"github.com/tadeaspetak/secret-reindeer/internal/utils"
 )
-
-func PromptStringNew(label string) string {
-	prompt := promptui.Prompt{
-		Label: label,
-	}
-
-	value, err := prompt.Run()
-	if err != nil {
-		log.Fatalf("Prompt failed %v.\n", err)
-	}
-
-	return value
-}
 
 func PromptStringEdit(label string, currentValue string) string {
 	prompt := promptui.Prompt{
@@ -51,8 +37,8 @@ func PromptSelectParticipant(participants []data.Participant, selectedLabel stri
 
 	templates := &promptui.SelectTemplates{
 		Label:    "{{ . }}",
-		Active:   "👉 {{ .Email | cyan }} ({{ .Salutation }}, Excluded: {{ .ExcludedRecipients | stringsJoin }}, Predestined: {{ .PredestinedRecipient }})",
-		Inactive: "   {{ .Email | cyan }} ({{ .Salutation }}, Excluded: {{ .ExcludedRecipients | stringsJoin }}, Predestined: {{ .PredestinedRecipient }})",
+		Active:   "👉 {{ .Email | cyan }} ({{ .Salutation }}, exc: {{ .ExcludedRecipients | stringsJoin }}, pre: {{ .PredestinedRecipient }})",
+		Inactive: "   {{ .Email | cyan }} ({{ .Salutation }}, exc: {{ .ExcludedRecipients | stringsJoin }}, pre: {{ .PredestinedRecipient }})",
 		Selected: fmt.Sprintf("%s {{ .Email }}", selectedLabel),
 		FuncMap:  funcMap,
 	}
@@ -70,7 +56,6 @@ func PromptSelectParticipant(participants []data.Participant, selectedLabel stri
 		Label:     "Which participant would you like to manage?",
 		Items:     participants,
 		Templates: templates,
-		Size:      5,
 		Searcher:  searcher,
 	}
 
@@ -82,46 +67,4 @@ func PromptSelectParticipant(participants []data.Participant, selectedLabel stri
 	}
 
 	return index
-}
-
-type PromptMultiSelectItem struct {
-	ID         string
-	IsSelected bool
-}
-
-func PromptMultiSelect(items []PromptMultiSelectItem, selectedPosition int, label string) ([]PromptMultiSelectItem, error) {
-	// if the `done` item doesn't exist yet, prepend it
-	const doneID = "Done"
-	if len(items) > 0 && items[0].ID != doneID {
-		items = append([]PromptMultiSelectItem{{ID: doneID}}, items...)
-	}
-
-	templates := &promptui.SelectTemplates{
-		Label:    `{{if .IsSelected}}✔ {{end}} {{ .ID }} - label`,
-		Active:   "→ {{if .IsSelected}}✔ {{end}}{{ .ID | cyan }}",
-		Inactive: "{{if .IsSelected}}✔ {{end}}{{ .ID | cyan }}",
-	}
-
-	prompt := promptui.Select{
-		Label:        label,
-		Items:        items,
-		Templates:    templates,
-		CursorPos:    selectedPosition, // place the cursor at the currently selected position
-		HideSelected: true,
-	}
-
-	index, _, err := prompt.Run()
-	if err != nil {
-		return nil, fmt.Errorf("prompt failed: %w", err)
-	}
-
-	selectedItem := &items[index]
-	if selectedItem.ID != doneID {
-		// unless `done` has been selected, toggle the current item and display again
-		selectedItem.IsSelected = !selectedItem.IsSelected
-		return PromptMultiSelect(items, index, label)
-	}
-
-	selectedItems := utils.Filter(items, func(i PromptMultiSelectItem, _ int) bool { return i.IsSelected })
-	return selectedItems, nil
 }

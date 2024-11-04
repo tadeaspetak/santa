@@ -1,4 +1,4 @@
-package mailgun
+package cmd
 
 import (
 	"fmt"
@@ -9,16 +9,17 @@ import (
 	"github.com/tadeaspetak/secret-reindeer/internal/prompt"
 )
 
-var editCmd = &cobra.Command{
-	Use:   "edit",
+var mailgunCmd = &cobra.Command{
+	Use:   "mailgun",
 	Short: "edit mailgun config",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmdData := data.LoadCmdData(cmd)
+		cmdData := (&data.CmdData{}).Load(cmd)
+
 		fmt.Println("Edit the mailgun config:\n")
 
 		cmdData.Mailgun.Domain = strings.TrimSpace(prompt.PromptStringEdit("Mailgun domain", cmdData.Mailgun.Domain))
 		cmdData.Mailgun.APIKey = strings.TrimSpace(prompt.PromptStringEdit("Mailgun API key", cmdData.Mailgun.APIKey))
 
-		data.SaveCmdData(cmd, cmdData)
+		cmdData.Save()
 	},
 }

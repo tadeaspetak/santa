@@ -1,13 +1,12 @@
 {
-  "isDebug": true,
   "mailgun": {
     "domain": "mg.johndoe.me",
-    "apiKey": "XXX"
+    "apiKey": "XXX",
+    "sender": "secret@reindeer.com"
   },
   "email": {
-    "sender": "secret@reindeer.com",
     "subject": "Secretly reindeering",
-    "body": "<p>Hi</p><p>Come up with something lovely for %{receiverSalutation}.</p><p>Happy hunting,<br/>Your secret reindeer</p>"
+    "body": "<p>Hi</p><p>Come up with something lovely for %{recipientSalutation}.</p><p>Happy hunting,<br/>Your secret reindeer</p>"
   },
   "participants": [
     {

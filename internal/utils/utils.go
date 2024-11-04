@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"math/rand"
+)
+
 // remove an element at a given index from a slice
 // while preserving order (https://stackoverflow.com/a/37335777/3844098).
 func RemoveFromSlice[K any](slice []K, index int) []K {
@@ -15,4 +19,9 @@ func Filter[K any](slice []K, predicate func(item K, i int) bool) []K {
 		}
 	}
 	return result
+}
+
+// GetRandomIndexInArray gets a random index within a given array
+func GetRandomIndexInArray[T any](arr []T) int {
+	return rand.Intn(len(arr))
 }

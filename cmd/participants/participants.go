@@ -2,6 +2,7 @@ package participants
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/tadeaspetak/secret-reindeer/cmd/participants/edit"
 )
 
 var ParticipantsCmd = &cobra.Command{
@@ -13,5 +14,5 @@ var ParticipantsCmd = &cobra.Command{
 func init() {
 	ParticipantsCmd.AddCommand(addCmd)
 	ParticipantsCmd.AddCommand(deleteCmd)
-	ParticipantsCmd.AddCommand(editCmd)
+	ParticipantsCmd.AddCommand(edit.EditParticipantCmd)
 }

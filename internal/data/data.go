@@ -16,16 +16,14 @@ import (
 
 // Data for the app
 type Data struct {
-	IsDebug      bool          `json:"isDebug"`
-	Email        Email         `json:"email"`
+	Template     Template      `json:"template"`
 	Mailgun      Mailgun       `json:"mailgun"`
 	Participants []Participant `json:"participants" validate:"min=2,dive"`
 }
 
-// Email props for the email to be sent out
-type Email struct {
+// Template props for the email to be sent out
+type Template struct {
 	Body    string `json:"body" validate:"required"`
-	Sender  string `json:"sender" validate:"required,email"`
 	Subject string `json:"subject" validate:"required"`
 }
 
@@ -33,6 +31,7 @@ type Email struct {
 type Mailgun struct {
 	Domain string `json:"domain" validate:"required"`
 	APIKey string `json:"apiKey" validate:"required"`
+	Sender string `json:"sender" validate:"required,email"`
 }
 
 // Participant definition
@@ -86,15 +85,20 @@ func (d *Data) RemoveParticipant(participantIndex int) error {
 
 // LoadData load data from a JSON file
 func LoadData(filePath string) Data {
+	var data Data
+
 	jsonFile, err := os.Open(filePath)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return data
+		}
+
 		log.Fatal("Error loading config", err)
 	}
 
 	defer jsonFile.Close()
 
 	byteValue, _ := io.ReadAll(jsonFile)
-	var data Data
 	err = json.Unmarshal(byteValue, &data)
 	if err != nil {
 		log.Fatal(err)
@@ -103,6 +107,7 @@ func LoadData(filePath string) Data {
 	return data
 }
 
+// TODO: comment
 func unescapeUnicodeCharactersInJSON(_jsonRaw json.RawMessage) (json.RawMessage, error) {
 	str, err := strconv.Unquote(strings.Replace(strconv.Quote(string(_jsonRaw)), `\\u`, `\u`, -1))
 	if err != nil {

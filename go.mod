@@ -3,11 +3,11 @@ module github.com/tadeaspetak/secret-reindeer
 go 1.23
 
 require (
-	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/mailgun/mailgun-go/v4 v4.15.2
 	github.com/manifoldco/promptui v0.9.0
 	github.com/spf13/cobra v1.8.1
+	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 )
 
 require (
@@ -27,5 +27,4 @@ require (
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 )

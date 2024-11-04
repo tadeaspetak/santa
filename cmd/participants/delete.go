@@ -14,7 +14,7 @@ var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "delete a participant",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmdData := data.LoadCmdData(cmd)
+		cmdData := (&data.CmdData{}).Load(cmd)
 		fmt.Println("Delete a participant:\n")
 
 		// select a participant
@@ -43,7 +43,7 @@ var deleteCmd = &cobra.Command{
 		}
 
 		cmdData.RemoveParticipant(participantIndex)
-		data.SaveCmdData(cmd, cmdData)
+		cmdData.Save()
 		fmt.Printf("Successfully deleted participant %v.", email)
 
 	},
