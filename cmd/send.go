@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
-	"github.com/tadeaspetak/secret-reindeer/app"
-	"github.com/tadeaspetak/secret-reindeer/internal/data"
+	"github.com/tadeaspetak/secret-reindeer/cmd/cmdData"
+	"github.com/tadeaspetak/secret-reindeer/internal/app"
 	"github.com/tadeaspetak/secret-reindeer/internal/validation"
 )
 
@@ -16,9 +16,9 @@ var sendCmd = &cobra.Command{
 	Use:   "send",
 	Short: "send the email",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmdData := (&data.CmdData{}).Load(cmd)
+		dat := (&cmdData.CmdData{}).Load(cmd)
 
-		err := validation.Validate.Struct(cmdData)
+		err := validation.Validate.Struct(dat)
 		if err != nil {
 			log.Fatalf("Invalid data: %v", err)
 		}
@@ -34,9 +34,9 @@ var sendCmd = &cobra.Command{
 		}
 
 		app.Send(
-			app.NewMailgunMailer(cmdData.Mailgun.Domain, cmdData.Mailgun.APIKey),
-			app.Raffle(cmdData.Participants, 5),
-			cmdData.Data.Template,
+			app.NewMailgunMailer(dat.Mailgun.Domain, dat.Mailgun.APIKey),
+			app.Raffle(dat.Participants, 5),
+			dat.Data.Template,
 			isDebug,
 			fixedRecipient,
 		)

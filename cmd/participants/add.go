@@ -7,6 +7,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"github.com/tadeaspetak/secret-reindeer/cmd/cmdData"
 	"github.com/tadeaspetak/secret-reindeer/internal/data"
 	"github.com/tadeaspetak/secret-reindeer/internal/validation"
 )
@@ -28,7 +29,7 @@ var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "add a participant",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmdData := (&data.CmdData{}).Load(cmd)
+		dat := (&cmdData.CmdData{}).Load(cmd)
 		fmt.Print("Add a new participant!\n\n")
 
 		// collect the data
@@ -36,18 +37,18 @@ var addCmd = &cobra.Command{
 		salutation := promptStringNew("Salutation")
 
 		// ensure the email is unique
-		if index := slices.IndexFunc(cmdData.Participants, func(participant data.Participant) bool {
+		if index := slices.IndexFunc(dat.Participants, func(participant data.Participant) bool {
 			return participant.Email == email
 		}); index > -1 {
 			log.Fatalf("A participant with an email '%v' already exists.", email)
 		}
 
 		// add a participant
-		cmdData.Participants = append(cmdData.Participants, data.Participant{
+		dat.Participants = append(dat.Participants, data.Participant{
 			Email:      email,
 			Salutation: salutation,
 		})
-		cmdData.Save()
+		dat.Save()
 		fmt.Printf("A new participant with an email '%v' and a salutation '%v' has been added.\n", email, salutation)
 	},
 }

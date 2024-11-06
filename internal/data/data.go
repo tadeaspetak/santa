@@ -10,8 +10,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-
-	"github.com/tadeaspetak/secret-reindeer/internal/utils"
 )
 
 // Data for the app
@@ -64,19 +62,25 @@ func (d *Data) UpdateParticipantEmail(participantIndex int, curr string, next st
 	return nil
 }
 
+// remove an element at a given index from a slice
+// while preserving order (https://stackoverflow.com/a/37335777/3844098).
+func removeFromSlice[K any](slice []K, index int) []K {
+	return append(slice[:index], slice[index+1:]...)
+}
+
 func (d *Data) RemoveParticipant(participantIndex int) error {
 	if participantIndex >= len(d.Participants) {
 		return fmt.Errorf("Participant with index %v does not exist", participantIndex)
 	}
 	removedParticipantEmail := d.Participants[participantIndex].Email
 
-	d.Participants = utils.RemoveFromSlice(d.Participants, participantIndex)
+	d.Participants = removeFromSlice(d.Participants, participantIndex)
 
 	// ensure the email is also removed in all excluded recipients
 	for index := range d.Participants {
 		participant := &d.Participants[index]
 		if emailIndex := slices.Index(participant.ExcludedRecipients, removedParticipantEmail); emailIndex > -1 {
-			participant.ExcludedRecipients = utils.RemoveFromSlice(participant.ExcludedRecipients, emailIndex)
+			participant.ExcludedRecipients = removeFromSlice(participant.ExcludedRecipients, emailIndex)
 		}
 	}
 

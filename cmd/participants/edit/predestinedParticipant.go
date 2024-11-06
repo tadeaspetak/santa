@@ -6,7 +6,6 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/tadeaspetak/secret-reindeer/internal/data"
-	"github.com/tadeaspetak/secret-reindeer/internal/utils"
 )
 
 func editPredestinedParticipant(participants []data.Participant, editedParticipantIndex int) {
@@ -43,9 +42,10 @@ type predestinedItem struct {
 func promptPredestinedSelect(emails []string, selected string) int {
 	removeLabel := "Remove"
 
-	items := utils.Map(emails, func(email string, i int) predestinedItem {
-		return predestinedItem{Label: email, IsSelected: selected == email}
-	})
+	items := make([]predestinedItem, len(emails))
+	for _, email := range emails {
+		items = append(items, predestinedItem{Label: email, IsSelected: selected == email})
+	}
 	items = append(items, predestinedItem{Label: removeLabel, IsSelected: false})
 
 	templates := &promptui.SelectTemplates{

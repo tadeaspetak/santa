@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/tadeaspetak/secret-reindeer/cmd/cmdData"
 	"github.com/tadeaspetak/secret-reindeer/cmd/participants"
-	"github.com/tadeaspetak/secret-reindeer/internal/data"
 )
 
 var RootCmd = &cobra.Command{
@@ -23,7 +23,7 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.PersistentFlags().String(data.DataPathFlagName, "data/data.json", "data file path")
+	RootCmd.PersistentFlags().String(cmdData.DataPathFlagName, "data/data.json", "data file path")
 
 	RootCmd.AddCommand(participants.ParticipantsCmd)
 	RootCmd.AddCommand(mailgunCmd)

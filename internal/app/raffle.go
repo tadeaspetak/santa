@@ -5,9 +5,14 @@ import (
 	"log"
 	"slices"
 
+	"math/rand"
+
 	"github.com/tadeaspetak/secret-reindeer/internal/data"
-	"github.com/tadeaspetak/secret-reindeer/internal/utils"
 )
+
+func getRandomIndexInArray[T any](arr []T) int {
+	return rand.Intn(len(arr))
+}
 
 type raffledPair struct {
 	giver     data.Participant
@@ -64,7 +69,7 @@ func Raffle(participants []data.Participant, maxAttemptCount int) []raffledPair 
 		}
 
 		// get a random recipient, add to the raffled and remove from potential
-		actualRecipient := actualPotentialRecipients[utils.GetRandomIndexInArray(actualPotentialRecipients)]
+		actualRecipient := actualPotentialRecipients[getRandomIndexInArray(actualPotentialRecipients)]
 		raffled[i] = raffledPair{giver: giver, recipient: actualRecipient}
 		delete(remainingPotentialRecipients, actualRecipient.Email)
 	}

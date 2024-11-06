@@ -5,7 +5,6 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/tadeaspetak/secret-reindeer/internal/data"
-	"github.com/tadeaspetak/secret-reindeer/internal/utils"
 )
 
 type promptMultiSelectItem struct {
@@ -50,7 +49,12 @@ func promptMultiSelect(items []promptMultiSelectItem, selectedPosition int, labe
 		return promptMultiSelect(items, index, label)
 	}
 
-	selectedItems := utils.Filter(items, func(i promptMultiSelectItem, _ int) bool { return i.IsSelected })
+	selectedItems := make([]promptMultiSelectItem, 0)
+	for _, i := range items {
+		if i.IsSelected {
+			selectedItems = append(selectedItems, i)
+		}
+	}
 	return selectedItems
 }
 

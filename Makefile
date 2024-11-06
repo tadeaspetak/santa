@@ -6,7 +6,7 @@ APP_NAME := secret-reindeer
 all: run
 
 run:
-	go run ./...
+	go run .
 
 test:
 	go test ./...
@@ -15,12 +15,13 @@ fmt:
 	go fmt ./...
 
 lint: fmt
-  staticcheck ./...
+	make tools
 	go vet ./...
+	staticcheck ./...
 
 # TODO
 build: lint
-	go build -o ./bin/$(APP_NAME) ./cmd
+	go build -o ./bin/$(APP_NAME) .
 
 # TODO
 clean:

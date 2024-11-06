@@ -6,21 +6,21 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/tadeaspetak/secret-reindeer/internal/data"
+	"github.com/tadeaspetak/secret-reindeer/cmd/cmdData"
 	"github.com/tadeaspetak/secret-reindeer/internal/prompt"
 )
 
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "delete a participant",
-	Run: func(cmd *cobra.Command, args []string) {
-		cmdData := (&data.CmdData{}).Load(cmd)
+	Run: func(c *cobra.Command, args []string) {
+		dat := (&cmdData.CmdData{}).Load(c)
 
 		fmt.Print("Delete a participant:\n\n")
-		participantIndex := prompt.PromptSelectParticipant(cmdData.Participants, "Deleting")
+		participantIndex := prompt.PromptSelectParticipant(dat.Participants, "Deleting")
 
 		// confirm
-		email := cmdData.Participants[participantIndex].Email
+		email := dat.Participants[participantIndex].Email
 		prompt := promptui.Prompt{
 			Label:     fmt.Sprintf("Are you sure you want to delete %s?", email),
 			IsConfirm: true,
@@ -38,8 +38,8 @@ var deleteCmd = &cobra.Command{
 		}
 
 		// actually remove
-		cmdData.RemoveParticipant(participantIndex)
-		cmdData.Save()
+		dat.RemoveParticipant(participantIndex)
+		dat.Save()
 		fmt.Printf("Successfully deleted the participant %v.", email)
 
 	},

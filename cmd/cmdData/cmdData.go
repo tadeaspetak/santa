@@ -1,9 +1,10 @@
-package data
+package cmdData
 
 import (
 	"log"
 
 	"github.com/spf13/cobra"
+	"github.com/tadeaspetak/secret-reindeer/internal/data"
 )
 
 var DataPathFlagName = "data"
@@ -11,7 +12,7 @@ var DataPathFlagName = "data"
 // TODO (ask): is this a good way to do inheritance by composition that go promotes?
 type CmdData struct {
 	cmd *cobra.Command
-	Data
+	data.Data
 }
 
 func getCmdDataPath(cmd *cobra.Command) string {
@@ -25,7 +26,7 @@ func (c *CmdData) Load(cmd *cobra.Command) *CmdData {
 		c = &CmdData{}
 	}
 	c.cmd = cmd
-	c.Data = LoadData(getCmdDataPath((cmd)))
+	c.Data = data.LoadData(getCmdDataPath((cmd)))
 	return c
 }
 
@@ -33,5 +34,5 @@ func (c *CmdData) Save() {
 	if c == nil {
 		log.Fatalln("Pointer to cmdData is nil")
 	}
-	SaveData(getCmdDataPath(c.cmd), c.Data)
+	data.SaveData(getCmdDataPath(c.cmd), c.Data)
 }

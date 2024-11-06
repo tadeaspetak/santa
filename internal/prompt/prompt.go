@@ -22,7 +22,7 @@ func PromptStringEdit(label string, currentValue string) string {
 		log.Fatalf("Prompt failed %v\n", err)
 	}
 
-	return nextValue
+	return strings.TrimSpace(nextValue)
 }
 
 func PromptSelectParticipant(participants []data.Participant, selectedLabel string) int {

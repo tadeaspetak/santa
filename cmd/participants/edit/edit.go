@@ -6,8 +6,9 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/tadeaspetak/secret-reindeer/internal/data"
+	"github.com/tadeaspetak/secret-reindeer/cmd/cmdData"
 	"github.com/tadeaspetak/secret-reindeer/internal/prompt"
+	"github.com/tadeaspetak/secret-reindeer/internal/validation"
 )
 
 type editActionID int
@@ -58,34 +59,32 @@ var EditParticipantCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "edit a participant",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmdData := (&data.CmdData{}).Load(cmd)
+		dat := (&cmdData.CmdData{}).Load(cmd)
 		fmt.Print("Edit a aprticipant:\n\n")
 
 		// repeat forever to make editing multiple participants smoother
 		for {
 			// select participant and action
-			editedParticipantIndex := prompt.PromptSelectParticipant(cmdData.Participants, "Editing")
+			editedParticipantIndex := prompt.PromptSelectParticipant(dat.Participants, "Editing")
 			actionIndex := selectEditAction()
 
 			switch editActionID(actionIndex) {
 			case EditEmail:
-				curr := cmdData.Participants[editedParticipantIndex].Email
-				next := prompt.PromptStringEdit("Edit email", curr)
-				cmdData.UpdateParticipantEmail(editedParticipantIndex, curr, next)
+				curr := dat.Participants[editedParticipantIndex].Email
+				next := validation.SanitizeEmail(prompt.PromptStringEdit("Edit email", curr))
+				dat.UpdateParticipantEmail(editedParticipantIndex, curr, next)
 			case EditSalutation:
-				participant := &cmdData.Participants[editedParticipantIndex]
+				participant := &dat.Participants[editedParticipantIndex]
 				salutation := prompt.PromptStringEdit("Edit salutation", participant.Salutation)
 				participant.Salutation = salutation
 			case EditExcludedRecipients:
-				editExcludedRecipients(cmdData.Participants, editedParticipantIndex)
+				editExcludedRecipients(dat.Participants, editedParticipantIndex)
 			case EditPredestinedRecipient:
-				editPredestinedParticipant(cmdData.Participants, editedParticipantIndex)
+				editPredestinedParticipant(dat.Participants, editedParticipantIndex)
 			}
 
-			fmt.Printf("%s")
-
 			// save the data
-			cmdData.Save()
+			dat.Save()
 		}
 	},
 }
