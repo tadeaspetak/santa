@@ -21,6 +21,7 @@ var templateCmd = &cobra.Command{
 
 		dat.Template.Body = strings.TrimSpace(prompt.PromptStringEdit("Body", dat.Template.Body))
 		dat.Template.Subject = strings.TrimSpace(prompt.PromptStringEdit("Subject", dat.Template.Subject))
+		dat.Template.Sender = strings.TrimSpace(prompt.PromptStringEdit("Sender", dat.Template.Sender))
 
 		dat.Save()
 		fmt.Println("Saved the changes.")

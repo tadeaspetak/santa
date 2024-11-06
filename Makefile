@@ -19,11 +19,9 @@ lint: fmt
 	go vet ./...
 	staticcheck ./...
 
-# TODO
 build: lint
 	go build -o ./bin/$(APP_NAME) .
 
-# TODO
 clean:
 	rm -rf ./bin/$(APP_NAME)
 

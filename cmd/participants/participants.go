@@ -7,8 +7,8 @@ import (
 
 var ParticipantsCmd = &cobra.Command{
 	Use:   "participants",
-	Short: "secret reindeer participants",
-	Long:  "Create, edit and delete secret reindeer participants.",
+	Short: "manage participants",
+	Long:  "Create, edit and delete participants.",
 }
 
 func init() {

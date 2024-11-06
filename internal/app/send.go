@@ -8,10 +8,10 @@ import (
 	"github.com/tadeaspetak/secret-reindeer/internal/data"
 )
 
-func Send(mlr mailer, pairs []raffledPair, template data.Template, isDebug bool, fixedRecipient string) {
+func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug bool, alwaysSendTo string) {
 	for _, pair := range pairs {
 		// prefer the email provided via the flag for testing purposes
-		recipient := fixedRecipient
+		recipient := alwaysSendTo
 		if recipient == "" {
 			recipient = pair.giver.Email
 		}

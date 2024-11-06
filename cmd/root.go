@@ -10,7 +10,7 @@ import (
 )
 
 var RootCmd = &cobra.Command{
-	Short: "TODO: short desc",
+	Short: "TODO",
 	Long: `TODO: Long
             desc `,
 }

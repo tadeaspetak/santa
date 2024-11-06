@@ -14,15 +14,15 @@ func getRandomIndexInArray[T any](arr []T) int {
 	return rand.Intn(len(arr))
 }
 
-type raffledPair struct {
+type participantPair struct {
 	giver     data.Participant
 	recipient data.Participant
 }
 
-func Raffle(participants []data.Participant, maxAttemptCount int) []raffledPair {
+func PairParticipants(participants []data.Participant, maxAttemptCount int) []participantPair {
 	if maxAttemptCount <= 0 {
 		log.Fatalf(
-			"Too many failed attempts to raffle! Try again or adjust your data, such as predestined or excluded recipients, to make raffling possible.",
+			"Too many failed attempts to pair participants! Try again or adjust your data, such as predestined or excluded recipients, to make pairing participants possible.",
 		)
 	}
 
@@ -44,7 +44,7 @@ func Raffle(participants []data.Participant, maxAttemptCount int) []raffledPair 
 		}
 	}
 
-	raffled := make([]raffledPair, len(participants))
+	paired := make([]participantPair, len(participants))
 	for i, giver := range participants {
 		// the recipient is predestined, just assign them
 		if giver.PredestinedRecipient != "" {
@@ -52,7 +52,7 @@ func Raffle(participants []data.Participant, maxAttemptCount int) []raffledPair 
 			if !ok {
 				log.Fatalf("Predestined recipient %s does not exist.", giver.PredestinedRecipient)
 			}
-			raffled[i] = raffledPair{giver: giver, recipient: recipient}
+			paired[i] = participantPair{giver: giver, recipient: recipient}
 			continue
 		}
 
@@ -65,14 +65,14 @@ func Raffle(participants []data.Participant, maxAttemptCount int) []raffledPair 
 
 		if len(actualPotentialRecipients) == 0 {
 			fmt.Printf("No recipients for %s, let's try again.\n\n\n\n\n", giver.Email)
-			return Raffle(participants, maxAttemptCount-1)
+			return PairParticipants(participants, maxAttemptCount-1)
 		}
 
-		// get a random recipient, add to the raffled and remove from potential
+		// get a random recipient, add to the paried and remove from potential
 		actualRecipient := actualPotentialRecipients[getRandomIndexInArray(actualPotentialRecipients)]
-		raffled[i] = raffledPair{giver: giver, recipient: actualRecipient}
+		paired[i] = participantPair{giver: giver, recipient: actualRecipient}
 		delete(remainingPotentialRecipients, actualRecipient.Email)
 	}
 
-	return raffled
+	return paired
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"slices"
+	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -34,7 +35,7 @@ var addCmd = &cobra.Command{
 
 		// collect the data
 		email := validation.SanitizeEmail(promptStringNew("Email address"))
-		salutation := promptStringNew("Salutation")
+		salutation := strings.TrimSpace(promptStringNew("Salutation"))
 
 		// ensure the email is unique
 		if index := slices.IndexFunc(dat.Participants, func(participant data.Participant) bool {

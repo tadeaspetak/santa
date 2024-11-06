@@ -42,7 +42,7 @@ type Participant struct {
 
 // TODO (ask): should this be a pointer or not? since the struct contains a slice, the copy of the struct
 // will also contain a copy of that pointer (address); modifying that will modify the original data
-// but modifying a other regular fields would **not** modify the original data; for clarity, I think
+// but modifying other regular fields would **not** modify the original data; for clarity, I reckon
 // this should be a pointer
 func (d *Data) UpdateParticipantEmail(participantIndex int, curr string, next string) error {
 	if participantIndex >= len(d.Participants) {

@@ -28,17 +28,17 @@ var sendCmd = &cobra.Command{
 			log.Fatalf("Unable to get the %s flag: %v", isDebugFlagName, err)
 		}
 
-		fixedRecipient, err := cmd.Flags().GetString(alwaysSendToFlagName)
+		alwaysSendTo, err := cmd.Flags().GetString(alwaysSendToFlagName)
 		if err != nil {
 			log.Fatalf("Unable to get the %s flag: %v", alwaysSendToFlagName, err)
 		}
 
 		app.Send(
 			app.NewMailgunMailer(dat.Mailgun.Domain, dat.Mailgun.APIKey),
-			app.Raffle(dat.Participants, 5),
+			app.PairParticipants(dat.Participants, 5),
 			dat.Data.Template,
 			isDebug,
-			fixedRecipient,
+			alwaysSendTo,
 		)
 	},
 }
@@ -46,5 +46,5 @@ var sendCmd = &cobra.Command{
 func init() {
 	sendCmd.Flags().BoolP(isDebugFlagName, "d", false, "turn the debug mode on (won't send emails)")
 	sendCmd.Flags().
-		StringP(alwaysSendToFlagName, "a", "", "send all emails to the given address (for debugging purposes)")
+		StringP(alwaysSendToFlagName, "a", "", "send all emails to the given address (for testing purposes)")
 }

@@ -41,10 +41,10 @@ func TestSend(t *testing.T) {
 	mailer := mockMailer{}
 	Send(
 		&mailer,
-		[]raffledPair{
-			raffledPair{giver: p1, recipient: p2},
-			raffledPair{giver: p2, recipient: p3},
-			raffledPair{giver: p3, recipient: p1},
+		[]participantPair{
+			participantPair{giver: p1, recipient: p2},
+			participantPair{giver: p2, recipient: p3},
+			participantPair{giver: p3, recipient: p1},
 		},
 		data.Template{
 			Subject: "sub %{recipientSalutation}",
