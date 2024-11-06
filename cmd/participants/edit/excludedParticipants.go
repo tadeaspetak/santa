@@ -1,7 +1,7 @@
 package edit
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/manifoldco/promptui"
 	"github.com/tadeaspetak/secret-reindeer/internal/data"
@@ -13,11 +13,15 @@ type promptMultiSelectItem struct {
 	IsSelected bool
 }
 
-func promptMultiSelect(items []promptMultiSelectItem, selectedPosition int, label string) ([]promptMultiSelectItem, error) {
-	// if the `done` item doesn't exist yet, prepend it
+func promptMultiSelect(items []promptMultiSelectItem, selectedPosition int, label string) []promptMultiSelectItem {
+	if len(items) < 1 {
+		log.Fatalf("No participants to be selected.\n")
+	}
+
+	// if the `done` item doesn't exist yet, append it
 	const doneID = "Done"
-	if len(items) > 0 && items[0].ID != doneID {
-		items = append([]promptMultiSelectItem{{ID: doneID}}, items...)
+	if items[len(items)-1].ID != doneID {
+		items = append(items, promptMultiSelectItem{ID: doneID, IsSelected: false})
 	}
 
 	templates := &promptui.SelectTemplates{
@@ -36,18 +40,18 @@ func promptMultiSelect(items []promptMultiSelectItem, selectedPosition int, labe
 
 	index, _, err := prompt.Run()
 	if err != nil {
-		return nil, fmt.Errorf("prompt failed: %w", err)
+		log.Fatalf("Prompt failed %v.\n", err)
 	}
 
-	selectedItem := &items[index]
-	if selectedItem.ID != doneID {
+	if index != len(items)-1 {
 		// unless `done` has been selected, toggle the current item and display again
+		selectedItem := &items[index]
 		selectedItem.IsSelected = !selectedItem.IsSelected
 		return promptMultiSelect(items, index, label)
 	}
 
 	selectedItems := utils.Filter(items, func(i promptMultiSelectItem, _ int) bool { return i.IsSelected })
-	return selectedItems, nil
+	return selectedItems
 }
 
 func editExcludedRecipients(participants []data.Participant, participantIndex int) []data.Participant {
@@ -60,18 +64,18 @@ func editExcludedRecipients(participants []data.Participant, participantIndex in
 	}
 
 	// create items for the multi-select
-	multiSelectParticipants := []promptMultiSelectItem{}
+	multiSelectExcludedParticipants := []promptMultiSelectItem{}
 	for _, p := range participants {
 		// skip the participant themself
 		if p.Email == participant.Email {
 			continue
 		}
-		multiSelectParticipants = append(multiSelectParticipants, promptMultiSelectItem{
+		multiSelectExcludedParticipants = append(multiSelectExcludedParticipants, promptMultiSelectItem{
 			ID:         p.Email,
 			IsSelected: currentExcludedRecipients[p.Email],
 		})
 	}
-	excludedParticipants, _ := promptMultiSelect(multiSelectParticipants, 1, "Exclude the following participants")
+	excludedParticipants := promptMultiSelect(multiSelectExcludedParticipants, 1, "Exclude the following participants")
 
 	// update the excluded recipients
 	participant.ExcludedRecipients = make([]string, len(excludedParticipants))

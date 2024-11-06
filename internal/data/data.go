@@ -23,21 +23,21 @@ type Data struct {
 
 // Template props for the email to be sent out
 type Template struct {
-	Body    string `json:"body" validate:"required"`
+	Body    string `json:"body"    validate:"required"`
 	Subject string `json:"subject" validate:"required"`
+	Sender  string `json:"sender"  validate:"required,email"`
 }
 
 // Mailgun config
 type Mailgun struct {
 	Domain string `json:"domain" validate:"required"`
 	APIKey string `json:"apiKey" validate:"required"`
-	Sender string `json:"sender" validate:"required,email"`
 }
 
 // Participant definition
 type Participant struct {
-	Email                string   `json:"email" validate:"required,email"`
-	Salutation           string   `json:"salutation" validate:"required"`
+	Email                string   `json:"email"                          validate:"required,email"`
+	Salutation           string   `json:"salutation"                     validate:"required"`
 	ExcludedRecipients   []string `json:"excludedRecipients,omitempty"`
 	PredestinedRecipient string   `json:"predestinedRecipient,omitempty"`
 }
@@ -48,13 +48,13 @@ type Participant struct {
 // this should be a pointer
 func (d *Data) UpdateParticipantEmail(participantIndex int, curr string, next string) error {
 	if participantIndex >= len(d.Participants) {
-		return errors.New(fmt.Sprintf("Participant with index %v does not exist.", participantIndex))
+		return fmt.Errorf("Participant with index %v does not exist", participantIndex)
 	}
 
 	(&d.Participants[participantIndex]).Email = next
 
 	// ensure the email is also replaced in all excluded recipients
-	for index, _ := range d.Participants {
+	for index := range d.Participants {
 		participant := &d.Participants[index]
 		if emailIndex := slices.Index(participant.ExcludedRecipients, curr); emailIndex > -1 {
 			participant.ExcludedRecipients[emailIndex] = next
@@ -66,14 +66,14 @@ func (d *Data) UpdateParticipantEmail(participantIndex int, curr string, next st
 
 func (d *Data) RemoveParticipant(participantIndex int) error {
 	if participantIndex >= len(d.Participants) {
-		return errors.New(fmt.Sprintf("Participant with index %v does not exist.", participantIndex))
+		return fmt.Errorf("Participant with index %v does not exist", participantIndex)
 	}
 	removedParticipantEmail := d.Participants[participantIndex].Email
 
 	d.Participants = utils.RemoveFromSlice(d.Participants, participantIndex)
 
 	// ensure the email is also removed in all excluded recipients
-	for index, _ := range d.Participants {
+	for index := range d.Participants {
 		participant := &d.Participants[index]
 		if emailIndex := slices.Index(participant.ExcludedRecipients, removedParticipantEmail); emailIndex > -1 {
 			participant.ExcludedRecipients = utils.RemoveFromSlice(participant.ExcludedRecipients, emailIndex)

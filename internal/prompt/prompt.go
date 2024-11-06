@@ -26,7 +26,7 @@ func PromptStringEdit(label string, currentValue string) string {
 }
 
 func PromptSelectParticipant(participants []data.Participant, selectedLabel string) int {
-	// add a function to the template FuncMap, and manually add the color functions
+	// add a function to the template FuncMap, then manually add the color functions back
 	// https://github.com/manifoldco/promptui/blob/c2e487d3597f59bcf76b24c9e80679740a72212b/prompt.go#L101
 	funcMap := template.FuncMap{
 		"stringsJoin": func(slice []string) string { return strings.Join(slice, ",") },
@@ -37,8 +37,8 @@ func PromptSelectParticipant(participants []data.Participant, selectedLabel stri
 
 	templates := &promptui.SelectTemplates{
 		Label:    "{{ . }}",
-		Active:   "👉 {{ .Email | cyan }} ({{ .Salutation }}, exc: {{ .ExcludedRecipients | stringsJoin }}, pre: {{ .PredestinedRecipient }})",
-		Inactive: "   {{ .Email | cyan }} ({{ .Salutation }}, exc: {{ .ExcludedRecipients | stringsJoin }}, pre: {{ .PredestinedRecipient }})",
+		Active:   "→ {{ .Email | cyan }} ({{ .Salutation }}, exc: {{ .ExcludedRecipients | stringsJoin }}, pre: {{ .PredestinedRecipient }})",
+		Inactive: "  {{ .Email | cyan }} ({{ .Salutation }}, exc: {{ .ExcludedRecipients | stringsJoin }}, pre: {{ .PredestinedRecipient }})",
 		Selected: fmt.Sprintf("%s {{ .Email }}", selectedLabel),
 		FuncMap:  funcMap,
 	}
@@ -62,8 +62,7 @@ func PromptSelectParticipant(participants []data.Participant, selectedLabel stri
 	index, _, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return -1
+		log.Fatalf("Prompt failed %v\n", err)
 	}
 
 	return index

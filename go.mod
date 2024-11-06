@@ -7,7 +7,6 @@ require (
 	github.com/mailgun/mailgun-go/v4 v4.15.2
 	github.com/manifoldco/promptui v0.9.0
 	github.com/spf13/cobra v1.8.1
-	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 )
 
 require (

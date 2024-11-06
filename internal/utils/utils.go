@@ -25,3 +25,11 @@ func Filter[K any](slice []K, predicate func(item K, i int) bool) []K {
 func GetRandomIndexInArray[T any](arr []T) int {
 	return rand.Intn(len(arr))
 }
+
+func Map[K any, T any](slice []K, predicate func(item K, i int) T) []T {
+	result := make([]T, len(slice))
+	for i, item := range slice {
+		result[i] = predicate(item, i)
+	}
+	return result
+}

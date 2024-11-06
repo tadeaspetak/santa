@@ -4,7 +4,7 @@
     "apiKey": "XXX",
     "sender": "secret@reindeer.com"
   },
-  "email": {
+  "template": {
     "subject": "Secretly reindeering",
     "body": "<p>Hi</p><p>Come up with something lovely for %{recipientSalutation}.</p><p>Happy hunting,<br/>Your secret reindeer</p>"
   },

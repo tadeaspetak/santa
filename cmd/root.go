@@ -10,9 +10,8 @@ import (
 )
 
 var RootCmd = &cobra.Command{
-	Use:   "reindeer",
-	Short: "short desc",
-	Long: `Long
+	Short: "TODO: short desc",
+	Long: `TODO: Long
             desc `,
 }
 
@@ -24,7 +23,8 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.PersistentFlags().String(data.DataPathFlagName, "data/data.json", "data path")
+	RootCmd.PersistentFlags().String(data.DataPathFlagName, "data/data.json", "data file path")
+
 	RootCmd.AddCommand(participants.ParticipantsCmd)
 	RootCmd.AddCommand(mailgunCmd)
 	RootCmd.AddCommand(templateCmd)

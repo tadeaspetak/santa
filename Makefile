@@ -1,30 +1,31 @@
 # variables
 APP_NAME := secret-reindeer
 
-.PHONY: all run test fmt lint vet build clean
+.PHONY: all run build test fmt lint clean tools
 
 all: run
 
 run:
 	go run ./...
 
-build: vet
-	go build -o ./bin/$(APP_NAME) ./cmd/app
-
 test:
 	go test ./...
 
-# format
 fmt:
 	go fmt ./...
 
-# lint
 lint: fmt
-	golint ./...
-
-# find suspicious constructs
-vet: lint
+  staticcheck ./...
 	go vet ./...
 
+# TODO
+build: lint
+	go build -o ./bin/$(APP_NAME) ./cmd
+
+# TODO
 clean:
 	rm -rf ./bin/$(APP_NAME)
+
+tools:
+	go install honnef.co/go/tools/cmd/staticcheck@latest
+	go mod tidy

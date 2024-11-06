@@ -15,12 +15,12 @@ var templateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		cmdData := (&data.CmdData{}).Load(cmd)
 
-		// TODO: explain available variables
-		fmt.Println("Edit the template:\n")
+		fmt.Print("Edit the template. Use '%{recipientSalutation}' (without the aposotrophes) to substitute the recipient's salutation.\n\n")
 
 		cmdData.Template.Body = strings.TrimSpace(prompt.PromptStringEdit("Body", cmdData.Template.Body))
 		cmdData.Template.Subject = strings.TrimSpace(prompt.PromptStringEdit("Subject", cmdData.Template.Subject))
 
 		cmdData.Save()
+		fmt.Println("Saved the changes.")
 	},
 }

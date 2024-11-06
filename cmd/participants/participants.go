@@ -7,7 +7,7 @@ import (
 
 var ParticipantsCmd = &cobra.Command{
 	Use:   "participants",
-	Short: "Secret reindeer participants.",
+	Short: "secret reindeer participants",
 	Long:  "Create, edit and delete secret reindeer participants.",
 }
 

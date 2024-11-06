@@ -1,11 +1,12 @@
 package edit
 
 import (
-	"fmt"
+	"log"
 	"slices"
 
 	"github.com/manifoldco/promptui"
 	"github.com/tadeaspetak/secret-reindeer/internal/data"
+	"github.com/tadeaspetak/secret-reindeer/internal/utils"
 )
 
 func editPredestinedParticipant(participants []data.Participant, editedParticipantIndex int) {
@@ -26,11 +27,11 @@ func editPredestinedParticipant(participants []data.Participant, editedParticipa
 	}
 
 	editedParticipant := &participants[editedParticipantIndex]
-	predestinedindex := promptPredestinedSelect(available, editedParticipant.PredestinedRecipient)
-	if predestinedindex == -1 {
+	predestinedIndex := promptPredestinedSelect(available, editedParticipant.PredestinedRecipient)
+	if predestinedIndex == -1 {
 		editedParticipant.PredestinedRecipient = ""
 	} else {
-		editedParticipant.PredestinedRecipient = available[predestinedindex]
+		editedParticipant.PredestinedRecipient = available[predestinedIndex]
 	}
 }
 
@@ -42,11 +43,10 @@ type predestinedItem struct {
 func promptPredestinedSelect(emails []string, selected string) int {
 	removeLabel := "Remove"
 
-	items := make([]predestinedItem, len(emails)+1)
-	for i, email := range emails {
-		items[i] = predestinedItem{Label: email, IsSelected: selected == email}
-	}
-	items[len(items)-1] = predestinedItem{Label: removeLabel, IsSelected: false}
+	items := utils.Map(emails, func(email string, i int) predestinedItem {
+		return predestinedItem{Label: email, IsSelected: selected == email}
+	})
+	items = append(items, predestinedItem{Label: removeLabel, IsSelected: false})
 
 	templates := &promptui.SelectTemplates{
 		Label:    `{{if .IsSelected}}✔ {{end}} {{ .Label }}`,
@@ -63,9 +63,8 @@ func promptPredestinedSelect(emails []string, selected string) int {
 	index, _, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		// TODO: return error
-		return -2
+		log.Fatalf("Failed prompt: %v.\n", err)
+
 	}
 
 	if index == len(items)-1 {

@@ -2,6 +2,7 @@ package edit
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -11,6 +12,11 @@ import (
 
 type editActionID int
 
+type editAction struct {
+	ID    editActionID
+	Label string
+}
+
 const (
 	EditEmail = iota
 	EditSalutation
@@ -18,16 +24,11 @@ const (
 	EditPredestinedRecipient
 )
 
-type editAction struct {
-	ID    editActionID
-	Label string
-}
-
-func selectEditAction() (editActionID, error) {
+func selectEditAction() editActionID {
 	templates := &promptui.SelectTemplates{
 		Label:    "{{ . }}",
-		Active:   "👉 {{ .Label | cyan }}",
-		Inactive: "   {{ .Label | cyan }}",
+		Active:   "→ {{ .Label | cyan }}",
+		Inactive: "  {{ .Label | cyan }}",
 		Selected: "Editing {{ .Label }}",
 	}
 
@@ -47,11 +48,10 @@ func selectEditAction() (editActionID, error) {
 	index, _, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return -1, err
+		log.Fatalf("Prompt failed %v\n", err)
 	}
 
-	return editActions[index].ID, nil
+	return editActions[index].ID
 }
 
 var EditParticipantCmd = &cobra.Command{
@@ -59,24 +59,14 @@ var EditParticipantCmd = &cobra.Command{
 	Short: "edit a participant",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmdData := (&data.CmdData{}).Load(cmd)
-		fmt.Println("Edit a aprticipant:\n")
+		fmt.Print("Edit a aprticipant:\n\n")
 
+		// repeat forever to make editing multiple participants smoother
 		for {
-			// select a participant
+			// select participant and action
 			editedParticipantIndex := prompt.PromptSelectParticipant(cmdData.Participants, "Editing")
-			if editedParticipantIndex < 0 {
-				fmt.Printf("Failed to select a participant")
-				return
-			}
+			actionIndex := selectEditAction()
 
-			// choose an action
-			actionIndex, _ := selectEditAction()
-			if actionIndex < 0 {
-				fmt.Printf("Failed to select an action")
-				return
-			}
-
-			// make the update
 			switch editActionID(actionIndex) {
 			case EditEmail:
 				curr := cmdData.Participants[editedParticipantIndex].Email
@@ -91,6 +81,8 @@ var EditParticipantCmd = &cobra.Command{
 			case EditPredestinedRecipient:
 				editPredestinedParticipant(cmdData.Participants, editedParticipantIndex)
 			}
+
+			fmt.Printf("%s")
 
 			// save the data
 			cmdData.Save()

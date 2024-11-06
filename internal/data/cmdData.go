@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var DataPathFlagName = "dataPath"
+var DataPathFlagName = "data"
 
 // TODO (ask): is this a good way to do inheritance by composition that go promotes?
 type CmdData struct {
