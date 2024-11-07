@@ -23,7 +23,7 @@ build-cli: lint
 	go build -o ./bin/$(APP_NAME) .
 
 build-local: lint
-  go build -o ./$(APP_NAME) .
+	go build -o ./$(APP_NAME) .
 
 clean:
 	rm -rf ./bin/$(APP_NAME)
