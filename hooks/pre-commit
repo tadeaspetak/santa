@@ -1,1 +1,2 @@
-make build
+make lint
+make test
