@@ -1,6 +1,12 @@
-# TODO
+# Secret Santa
 
-- [ ] Finish the readme
+Secret Santa is a simple CLI app that makes drawing your Secret Santa pairings a breeze.
+
+## How to
+
+1. Download the app from
+
+## Mailgun
 
 ### Notes
 

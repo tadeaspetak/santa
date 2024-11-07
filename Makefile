@@ -19,11 +19,10 @@ lint: fmt
 	go vet ./...
 	staticcheck ./...
 
-build-cli: lint
-	go build -o ./bin/$(APP_NAME) .
+build: lint
+	env GOOS=darwin GOARCH=amd64 go build -o ./bin/ .
+	env GOOS=windows GOARCH=amd64 go build -o ./bin/ .
 
-build-local: lint
-	go build -o ./$(APP_NAME) .
 
 clean:
 	rm -rf ./bin/$(APP_NAME)
