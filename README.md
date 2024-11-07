@@ -11,3 +11,7 @@ Secret Santa is a simple CLI app that makes drawing your Secret Santa pairings a
 ### Notes
 
 If set, the `email.recipient` prop overrides the actual email recipients to allow you to easilly test what you are about to send.
+
+### Dev
+
+Use hooks in the `hooks` directory: `git config core.hooksPath hooks`.
