@@ -12,7 +12,7 @@ var ParticipantsCmd = &cobra.Command{
 }
 
 func init() {
-	ParticipantsCmd.AddCommand(addCmd)
+	ParticipantsCmd.AddCommand(AddCmd)
 	ParticipantsCmd.AddCommand(deleteCmd)
 	ParticipantsCmd.AddCommand(edit.EditParticipantCmd)
 }

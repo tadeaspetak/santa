@@ -29,5 +29,7 @@ func init() {
 	RootCmd.AddCommand(mailgunCmd)
 	RootCmd.AddCommand(templateCmd)
 	RootCmd.AddCommand(sendCmd)
+	RootCmd.AddCommand(versionCmd)
+	RootCmd.AddCommand(initCmd)
 
 }

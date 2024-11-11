@@ -26,12 +26,12 @@ func promptStringNew(label string) string {
 	return value
 }
 
-var addCmd = &cobra.Command{
+var AddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "add a participant",
 	Run: func(cmd *cobra.Command, args []string) {
 		dat := (&cmdData.CmdData{}).Load(cmd)
-		fmt.Print("Add a new participant!\n\n")
+		fmt.Print("\nAdd a new participant!\n\n")
 
 		// collect the data
 		email := validation.SanitizeEmail(promptStringNew("Email address"))
@@ -50,6 +50,6 @@ var addCmd = &cobra.Command{
 			Salutation: salutation,
 		})
 		dat.Save()
-		fmt.Printf("A new participant with an email '%v' and a salutation '%v' has been added.\n", email, salutation)
+		fmt.Printf("\nA new participant with an email '%v' and a salutation '%v' has been added.", email, salutation)
 	},
 }

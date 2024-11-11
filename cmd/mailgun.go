@@ -15,12 +15,16 @@ var mailgunCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		dat := (&cmdData.CmdData{}).Load(cmd)
 
-		fmt.Print("Edit the mailgun config. See the README for info on how to get create a Mailgun account.\n\n")
+		fmt.Print(`
+You need Mailgun to be set up for sending emails to your Secret Santa participants.
+See the README for info on how to create a Mailgun account and get the required info.
+
+`)
 
 		dat.Mailgun.Domain = strings.TrimSpace(prompt.PromptStringEdit("Mailgun domain", dat.Mailgun.Domain))
 		dat.Mailgun.APIKey = strings.TrimSpace(prompt.PromptStringEdit("Mailgun API key", dat.Mailgun.APIKey))
 
 		dat.Save()
-		fmt.Println("Saved the changes.")
+		fmt.Print("\nSaved the Mailgun settings.")
 	},
 }

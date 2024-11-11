@@ -14,9 +14,9 @@ import (
 
 // Data for the app
 type Data struct {
-	Template     Template      `json:"template"`
-	Mailgun      Mailgun       `json:"mailgun"`
-	Participants []Participant `json:"participants" validate:"min=2,dive"`
+	Template     Template      `json:"template,omitempty"`
+	Mailgun      Mailgun       `json:"mailgun,omitempty"`
+	Participants []Participant `json:"participants,omitempty" validate:"min=2,dive"`
 }
 
 // Template props for the email to be sent out
