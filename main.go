@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/tadeaspetak/secret-reindeer/cmd"
+	"github.com/tadeaspetak/santa/cmd"
 )
 
 func main() {

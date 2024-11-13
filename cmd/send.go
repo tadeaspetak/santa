@@ -4,9 +4,9 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
-	"github.com/tadeaspetak/secret-reindeer/cmd/cmdData"
-	"github.com/tadeaspetak/secret-reindeer/internal/app"
-	"github.com/tadeaspetak/secret-reindeer/internal/validation"
+	"github.com/tadeaspetak/santa/cmd/cmdData"
+	"github.com/tadeaspetak/santa/internal/app"
+	"github.com/tadeaspetak/santa/internal/validation"
 )
 
 var isDebugFlagName = "debug"

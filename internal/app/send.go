@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/tadeaspetak/secret-reindeer/internal/data"
+	"github.com/tadeaspetak/santa/internal/data"
 )
 
 func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug bool, alwaysSendTo string) {

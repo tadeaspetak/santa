@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/tadeaspetak/secret-reindeer/cmd/cmdData"
-	"github.com/tadeaspetak/secret-reindeer/cmd/participants"
+	"github.com/tadeaspetak/santa/cmd/cmdData"
+	"github.com/tadeaspetak/santa/cmd/participants"
 )
 
 var RootCmd = &cobra.Command{

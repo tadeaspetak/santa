@@ -7,7 +7,7 @@ import (
 
 	"math/rand"
 
-	"github.com/tadeaspetak/secret-reindeer/internal/data"
+	"github.com/tadeaspetak/santa/internal/data"
 )
 
 func getRandomIndexInArray[T any](arr []T) int {

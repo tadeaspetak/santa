@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tadeaspetak/secret-reindeer/internal/data"
+	"github.com/tadeaspetak/santa/internal/data"
 )
 
 type mail struct {

@@ -1,4 +1,4 @@
-module github.com/tadeaspetak/secret-reindeer
+module github.com/tadeaspetak/santa
 
 go 1.23
 

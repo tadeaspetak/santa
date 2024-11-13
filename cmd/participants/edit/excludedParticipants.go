@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/manifoldco/promptui"
-	"github.com/tadeaspetak/secret-reindeer/internal/data"
+	"github.com/tadeaspetak/santa/internal/data"
 )
 
 type promptMultiSelectItem struct {

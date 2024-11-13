@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
-	"github.com/tadeaspetak/secret-reindeer/internal/data"
+	"github.com/tadeaspetak/santa/internal/data"
 )
 
 func PromptStringEdit(label string, currentValue string) string {

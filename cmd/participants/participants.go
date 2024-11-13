@@ -2,7 +2,7 @@ package participants
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/tadeaspetak/secret-reindeer/cmd/participants/edit"
+	"github.com/tadeaspetak/santa/cmd/participants/edit"
 )
 
 var ParticipantsCmd = &cobra.Command{

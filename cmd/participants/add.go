@@ -8,9 +8,9 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/tadeaspetak/secret-reindeer/cmd/cmdData"
-	"github.com/tadeaspetak/secret-reindeer/internal/data"
-	"github.com/tadeaspetak/secret-reindeer/internal/validation"
+	"github.com/tadeaspetak/santa/cmd/cmdData"
+	"github.com/tadeaspetak/santa/internal/data"
+	"github.com/tadeaspetak/santa/internal/validation"
 )
 
 func promptStringNew(label string) string {

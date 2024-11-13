@@ -1,7 +1,7 @@
-APP_NAME := secret-reindeer
+APP_NAME := santa
 VERSION := v0.0.2
 # note: get the variable name using go tool nm <your binary> | grep <your variable>
-VERSION_LDFLAG = -ldflags "-X github.com/tadeaspetak/secret-reindeer/cmd/version.Version=$(VERSION)"
+VERSION_LDFLAG = -ldflags "-X github.com/tadeaspetak/santa/cmd/version.Version=$(VERSION)"
 
 .PHONY: all run build test fmt lint clean tools
 
@@ -22,8 +22,8 @@ lint: fmt
 	staticcheck ./...
 
 build: lint
-	env GOOS=darwin GOARCH=amd64 go build $(VERSION_LDFLAG) -o ./bin/ .
-	env GOOS=windows GOARCH=amd64 go build $(VERSION_LDFLAG) -o ./bin/ .
+	env GOOS=darwin GOARCH=amd64 go build $(VERSION_LDFLAG) -o ./bin/santa-mac .
+	env GOOS=windows GOARCH=amd64 go build $(VERSION_LDFLAG) -o ./bin/santa-win.exe .
 
 clean:
 	rm -rf ./bin/$(APP_NAME)
