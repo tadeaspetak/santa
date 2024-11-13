@@ -111,7 +111,7 @@ func LoadData(filePath string) Data {
 	return data
 }
 
-// TODO: comment
+// unescape JSON entities, making the result file human readable (and editable)
 func unescapeUnicodeCharactersInJSON(_jsonRaw json.RawMessage) (json.RawMessage, error) {
 	str, err := strconv.Unquote(strings.Replace(strconv.Quote(string(_jsonRaw)), `\\u`, `\u`, -1))
 	if err != nil {

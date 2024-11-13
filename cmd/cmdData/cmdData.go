@@ -16,8 +16,12 @@ type CmdData struct {
 }
 
 func getCmdDataPath(cmd *cobra.Command) string {
-	// TODO: handle errors
-	dataPath, _ := cmd.Flags().GetString(DataPathFlagName)
+	dataPath, err := cmd.Flags().GetString(DataPathFlagName)
+
+	if err != nil {
+		log.Fatalf("Could not get data-file path %v\n", err)
+	}
+
 	return dataPath
 }
 
