@@ -4,6 +4,9 @@ Santa is a simple CLI app that makes drawing your Secret Santa pairings a breeze
 
 > 💡 Secret Santa is a gift-exchange tradition where participants anonymously give gifts to a randomly assigned person. I have personally come to love this way of Christmas due to its promoting quality instead of quantity.
 
+1. Start by [setting the app up](#lets-get-you-going-)
+1. Once set up, [test and send your stealthy emails](#sending)
+
 ## Let's get you going 🎄
 
 First of, download the app from [https://github.com/tadeaspetak/santa/releases/latest](https://github.com/tadeaspetak/santa/releases/latest).
@@ -13,12 +16,12 @@ First of, download the app from [https://github.com/tadeaspetak/santa/releases/l
 Run the `init` command from your terminal, like `./santa-mac init`. This command will help you with the basic setup:
 
 1. [mailgun](#mailgun) config necessary for sending emails to your participants
-2. [email template](#email-template) used for constructing those emails
+2. [email template](#template) used for constructing those emails
 3. [participant definitions](#participants) for the app to know who's who and what their Santa-related preferences are
 
 All settings are saved in a `data.json` file, also easily readable & editable by a human. You can override the data-file path using the `-data` flag.
 
-### <a name="mailgun">Mailgun</a>
+### Mailgun
 
 You need a Mailgun sending domain and an API key to send emails to your participants.
 
@@ -28,7 +31,7 @@ You need a Mailgun sending domain and an API key to send emails to your particip
 
 Once done, use the `mailgun` command to enter the domain and your API key.
 
-### <a name="email-template">Email template</a>
+### Email template
 
 Each participant will receive an email constructed based on your template. The email should inform them of who they shall be picking a gift for this year.
 
@@ -46,7 +49,7 @@ Consider the following as a reasonable starting point:
 }
 ```
 
-### <a name="participant">Participants</a>
+### Participants
 
 The `participants` array defines the participants in your Secret Santa. You have the following options:
 
@@ -84,6 +87,10 @@ In the example below, `Mom` and `Dad` won't ever need to give a gift to each oth
     }
   ]
 ```
+
+## <a name="sending">Sending</a>
+
+TODO
 
 ### Dev notes
 
