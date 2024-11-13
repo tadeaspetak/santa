@@ -23,7 +23,7 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.PersistentFlags().String(cmdData.DataPathFlagName, "data/data.json", "data file path")
+	RootCmd.PersistentFlags().String(cmdData.DataPathFlagName, "data.json", "data file path")
 
 	RootCmd.AddCommand(participants.ParticipantsCmd)
 	RootCmd.AddCommand(mailgunCmd)

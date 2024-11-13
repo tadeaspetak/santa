@@ -2,13 +2,13 @@
 
 Santa is a simple CLI app that makes drawing your Secret Santa pairings a breeze.
 
-> 💡 Secret Santa is a gift-exchange tradition where participants anonymously give gifts to a randomly assigned person. I have personally come to love this due to its promoting quality instead of quantity.
+> 💡 Secret Santa is a gift-exchange tradition where participants anonymously give gifts to a randomly assigned person. I have personally come to love this way of Christmas due to its promoting quality instead of quantity.
 
 ## Let's get you going 🎄
 
-First of, download the app from TODO.
+First of, download the app from [https://github.com/tadeaspetak/santa/releases/latest](https://github.com/tadeaspetak/santa/releases/latest). If you're on Mac, make the file executable with `chmod +x santa-mac`.
 
-Once downloaded, run the `init` from your terminal like `./secret-santa init` (TODO the `init` command)(TODO: do you need to change permissions to executable?). This command will walk you through the basic setup:
+Run the `init` command from your terminal, like `./santa-mac init`. This command will help you with the basic setup:
 
 1. [mailgun](#mailgun) config necessary for sending emails to your participants
 2. [email template](#email-template) used for constructing those emails
