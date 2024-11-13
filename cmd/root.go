@@ -10,9 +10,10 @@ import (
 )
 
 var RootCmd = &cobra.Command{
-	Short: "TODO",
-	Long: `TODO: Long
-            desc `,
+	Short: "generate your secret santa pairings easily",
+	Long: `Santa is a simple CLI app that makes drawing your Secret Santa pairings a breeze.
+
+  For more info, head over to the README at https://github.com/tadeaspetak/santa/blob/main/README.md`,
 }
 
 func Execute() {

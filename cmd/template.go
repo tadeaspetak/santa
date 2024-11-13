@@ -17,7 +17,7 @@ var templateCmd = &cobra.Command{
 
 		fmt.Print(`
 Edit your email template. This is used to construct emails sent to your participants.
-Use '%{recipientSalutation}' (without the aposotrophes) to substitute the recipient's salutation.
+Use '%{recipientSalutation}' (without the aposotrophes) to substitute the recipient's salutation in the body and subject.
 
 `)
 

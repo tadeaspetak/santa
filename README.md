@@ -6,13 +6,17 @@ Santa is a simple CLI app that makes drawing your Secret Santa pairings a breeze
 
 ## Let's get you going 🎄
 
-First of, download the app from [https://github.com/tadeaspetak/santa/releases/latest](https://github.com/tadeaspetak/santa/releases/latest). If you're on Mac, make the file executable with `chmod +x santa-mac`.
+First of, download the app from [https://github.com/tadeaspetak/santa/releases/latest](https://github.com/tadeaspetak/santa/releases/latest).
+
+> ⚠️ If you're on Mac, make the file executable with `chmod +x santa-mac`. Then, you'll have to override the security check and allow the app to run.
 
 Run the `init` command from your terminal, like `./santa-mac init`. This command will help you with the basic setup:
 
 1. [mailgun](#mailgun) config necessary for sending emails to your participants
 2. [email template](#email-template) used for constructing those emails
 3. [participant definitions](#participants) for the app to know who's who and what their Santa-related preferences are
+
+All settings are saved in a `data.json` file, also easily readable & editable by a human. You can override the data-file path using the `-data` flag.
 
 ### <a name="mailgun">Mailgun</a>
 
@@ -84,7 +88,3 @@ In the example below, `Mom` and `Dad` won't ever need to give a gift to each oth
 ### Dev notes
 
 To use the git hooks in the `hooks` directory, run `git config core.hooksPath hooks`.
-
-TODO:
-
-- figure out releases

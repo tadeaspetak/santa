@@ -14,22 +14,22 @@ import (
 
 // Data for the app
 type Data struct {
-	Template     Template      `json:"template,omitempty"`
-	Mailgun      Mailgun       `json:"mailgun,omitempty"`
+	Template     Template      `json:"template"`
+	Mailgun      Mailgun       `json:"mailgun"`
 	Participants []Participant `json:"participants,omitempty" validate:"min=2,dive"`
 }
 
 // Template props for the email to be sent out
 type Template struct {
-	Body    string `json:"body"    validate:"required"`
-	Subject string `json:"subject" validate:"required"`
-	Sender  string `json:"sender"  validate:"required,email"`
+	Body    string `json:"body,omitempty"    validate:"required"`
+	Subject string `json:"subject,omitempty" validate:"required"`
+	Sender  string `json:"sender,omitempty"  validate:"required,email"`
 }
 
 // Mailgun config
 type Mailgun struct {
-	Domain string `json:"domain" validate:"required"`
-	APIKey string `json:"apiKey" validate:"required"`
+	Domain string `json:"domain,omitempty" validate:"required"`
+	APIKey string `json:"apiKey,omitempty" validate:"required"`
 }
 
 // Participant definition
