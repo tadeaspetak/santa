@@ -3,3 +3,4 @@ bin/
 
 *.json
 !data.example.json
+santa-batch-*
