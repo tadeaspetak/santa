@@ -16,7 +16,7 @@ var mailgunCmd = &cobra.Command{
 		dat := (&cmdData.CmdData{}).Load(cmd)
 
 		fmt.Print(`
-You need Mailgun to be set up for sending emails to your Secret Santa participants.
+You need Mailgun for sending emails to your Secret Santa participants.
 See the README for info on how to create a Mailgun account and get the required info.
 
 `)

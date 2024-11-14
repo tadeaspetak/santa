@@ -4,28 +4,33 @@
     "apiKey": "XXX"
   },
   "template": {
-    "subject": "Secretly reindeering",
-    "body": "<p>Hi</p><p>Come up with something lovely for %{recipientSalutation}.</p><p>Happy hunting,<br/>Your secret reindeer</p>",
-    "sender": "secret@mg.reindeer.com"
+    "subject": "🎄 Find a gift for %{recipientSalutation}",
+    "body": "<p>Hi</p><p>Come up with something lovely for %{recipientSalutation}.</p><p>Happy hunting,<br/>Your 🎅</p>",
+    "sender": "santa@mg.your-domain.com"
   },
   "participants": [
     {
-      "email": "john@doe.com",
-      "salutation": "John",
-      "excludedRecipients": ["jane@doe.com"]
+      "email": "mom@family.com",
+      "salutation": "Mom",
+      "excludedRecipients": ["dad@family.com"]
     },
     {
-      "email": "jane@doe.com",
-      "salutation": "Jane",
-      "excludedRecipients": ["john@doe.com"]
+      "email": "dad@family.com",
+      "salutation": "Dad",
+      "excludedRecipients": ["mom@family.com"]
     },
     {
-      "email": "joshua@doe.com",
-      "salutation": "Joshua"
+      "email": "auntie@family.com",
+      "salutation": "Auntie"
     },
     {
-      "email": "janette@doe.com",
-      "salutation": "Janette"
+      "email": "emily@family.com",
+      "salutation": "Emily",
+      "predestinedRecipient": "aunt@family.com"
+    },
+    {
+      "email": "jake@family.com",
+      "salutation": "Jake"
     }
   ]
 }

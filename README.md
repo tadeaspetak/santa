@@ -2,16 +2,16 @@
 
 Santa is a simple CLI app that makes drawing your Secret Santa pairings a breeze.
 
-> 💡 Secret Santa is a gift-exchange tradition where participants anonymously give gifts to a randomly assigned person. I have personally come to love this way of Christmas due to its promoting quality instead of quantity.
+> 💡 Secret Santa is a gift-exchange tradition where participants anonymously give gifts to a randomly assigned person. I have come to love this way of Christmas due to its promoting quality instead of quantity.
 
 1. Start by [setting the app up](#lets-get-you-going-)
-1. Once set up, [test and send your stealthy emails](#sending)
+1. Once set up, [test and send your stealthy emails](#sending).
 
 ## Let's get you going 🎄
 
 First of, download the app from [https://github.com/tadeaspetak/santa/releases/latest](https://github.com/tadeaspetak/santa/releases/latest).
 
-> ⚠️ If you're on Mac, make the file executable with `chmod +x santa-mac`. Then, you'll have to override the security check and allow the app to run.
+> ⚠️ If you're on Mac, make the file executable with `chmod +x santa-mac`. When running, you'll have to override the security check (click the ❔) and allow the app to run.
 
 Run the `init` command from your terminal, like `./santa-mac init`. This command will help you with the basic setup:
 
@@ -79,7 +79,7 @@ In the example below, `Mom` and `Dad` won't ever need to give a gift to each oth
     {
       "email": "emily@family.com",
       "salutation": "Emily",
-      "predestinedRecipient": "aunt@family.com"
+      "predestinedRecipient": "auntie@family.com"
     },
     {
       "email": "jake@family.com",
@@ -90,8 +90,28 @@ In the example below, `Mom` and `Dad` won't ever need to give a gift to each oth
 
 ## <a name="sending">Sending</a>
 
-TODO
+Alright, so you've set up your Mailgun, template and participants, and now you're ready to send it all out 🦉
 
-### Dev notes
+### Logs
+
+Every (about to be) sent email is saved in a `santa-batch-%datetime-%giftgiver.txt` file:
+
+1. If you e.g. discover a typo in someone's email, you don't have to scrape the whole batch. You'd just look at who that particular gift-giver was supposed to get as a recipient and tell them. Not perfect, but heaps better than nothing.
+2. It's excellent for debugging.
+
+Steer away from opening those files on real runs to keep yourself in the dark together with everyone else.
+
+### Debugging & testing
+
+Before bombarding your loved ones with a barrage of potentially flawed emails with a potentially flawed setup, `santa`'s got your back:
+
+1. Use the `-d` flag with the `send` command for debugging purposes. That way, everything runs as per usual, but no emails are sent. Check the batch files to make sure your emails are correct and the results are what you expect them to be.
+2. When you're ready, you can do a test run with the `-a always.send.to@email.com` flag. The `-a` flag generates emails as per usual and actually sends them (unless `-d` is also used). But, it always sends them to the hardcoded email address, presumably you. You can find the gift-giver this would have normally been sent to in the `reply-to` header.
+
+### Let's roll already
+
+When you're ready to run the `send` command without any flags, good luck 🛷
+
+## Dev notes
 
 To use the git hooks in the `hooks` directory, run `git config core.hooksPath hooks`.
