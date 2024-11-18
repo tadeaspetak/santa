@@ -3,6 +3,7 @@ package participants
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -38,7 +39,11 @@ var deleteCmd = &cobra.Command{
 		}
 
 		// actually remove
-		dat.RemoveParticipant(participantIndex)
+		err = dat.RemoveParticipant(participantIndex)
+		if err != nil {
+			log.Fatalf("Could not remove participant: %v", err)
+		}
+
 		dat.Save()
 		fmt.Printf("Successfully deleted the participant %v.", email)
 

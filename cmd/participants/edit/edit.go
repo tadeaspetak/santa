@@ -72,7 +72,10 @@ var EditParticipantCmd = &cobra.Command{
 			case EditEmail:
 				curr := dat.Participants[editedParticipantIndex].Email
 				next := validation.SanitizeEmail(prompt.PromptStringEdit("Edit email", curr))
-				dat.UpdateParticipantEmail(editedParticipantIndex, curr, next)
+				err := dat.UpdateParticipantEmail(editedParticipantIndex, curr, next)
+				if err != nil {
+					log.Fatalf("Failed to update participant email: %v", err)
+				}
 			case EditSalutation:
 				participant := &dat.Participants[editedParticipantIndex]
 				salutation := prompt.PromptStringEdit("Edit salutation", participant.Salutation)

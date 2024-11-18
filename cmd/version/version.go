@@ -1,4 +1,5 @@
 package version
 
-// set using an `ldflag`
+// Version is the version of the app set using an `ldflag`.
+// See the `Makefile` for how this is done.
 var Version string

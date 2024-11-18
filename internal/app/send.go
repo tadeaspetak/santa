@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -10,10 +9,11 @@ import (
 	"github.com/tadeaspetak/santa/internal/data"
 )
 
-func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug bool, alwaysSendTo string) {
+func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug bool, alwaysSendTo string) error {
 	batchDate := time.Now().Local().Format("20060102-150405")
+
 	for _, pair := range pairs {
-		// prefer the email provided via the flag for testing purposes
+		// prefer the email provided via the `alwaysSendTo` flag for testing purposes
 		recipient := alwaysSendTo
 		if recipient == "" {
 			recipient = pair.giver.Email
@@ -30,7 +30,7 @@ func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug b
 			0644,
 		)
 		if err != nil {
-			log.Fatalf("Unable to write a history batch file %v", err)
+			return fmt.Errorf("unable to write a history batch file %v", err)
 		}
 
 		// don't send anything when debugging
@@ -47,9 +47,14 @@ func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug b
 		)
 
 		if err != nil {
-			log.Fatalf("Could not send email to %v: %v\n", recipient, err)
+			// Note: It's questionable what the best course of action is here. Is it better to continue
+			// with the current batch or return an error even though some emails may already have been sent out?
+			return fmt.Errorf("could not send email to %v: %v", recipient, err)
 		}
 
 		fmt.Printf("Email to %s sent successfully\n", recipient)
+
 	}
+
+	return nil
 }

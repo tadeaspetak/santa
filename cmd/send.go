@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/spf13/cobra"
@@ -33,13 +34,19 @@ var sendCmd = &cobra.Command{
 			log.Fatalf("Unable to get the %s flag: %v", alwaysSendToFlagName, err)
 		}
 
-		app.Send(
+		err = app.Send(
 			app.NewMailgunMailer(dat.Mailgun.Domain, dat.Mailgun.APIKey),
 			app.PairParticipants(dat.Participants, 5),
 			dat.Data.Template,
 			isDebug,
 			alwaysSendTo,
 		)
+
+		if err != nil {
+			log.Fatalf(`There has been an error sending your emails: %v`, err)
+		}
+
+		fmt.Println(`Your emails have been successfully sent out!`)
 	},
 }
 

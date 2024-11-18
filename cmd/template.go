@@ -11,7 +11,7 @@ import (
 
 var templateCmd = &cobra.Command{
 	Use:   "template",
-	Short: "edit template config",
+	Short: "edit email template config",
 	Run: func(cmd *cobra.Command, args []string) {
 		dat := (&cmdData.CmdData{}).Load(cmd)
 

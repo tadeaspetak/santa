@@ -12,27 +12,27 @@ import (
 	"strings"
 )
 
-// Data for the app
+// Data is the representation of the data for the app.
 type Data struct {
 	Template     Template      `json:"template"`
 	Mailgun      Mailgun       `json:"mailgun"`
 	Participants []Participant `json:"participants,omitempty" validate:"min=2,dive"`
 }
 
-// Template props for the email to be sent out
+// Template defines the email(s) to be sent out to participants.
 type Template struct {
 	Body    string `json:"body,omitempty"    validate:"required"`
 	Subject string `json:"subject,omitempty" validate:"required"`
 	Sender  string `json:"sender,omitempty"  validate:"required,email"`
 }
 
-// Mailgun config
+// Mailgun contains the Mailgun-related config.
 type Mailgun struct {
 	Domain string `json:"domain,omitempty" validate:"required"`
 	APIKey string `json:"apiKey,omitempty" validate:"required"`
 }
 
-// Participant definition
+// Participant is the definition of each participant.
 type Participant struct {
 	Email                string   `json:"email"                          validate:"required,email"`
 	Salutation           string   `json:"salutation"                     validate:"required"`
@@ -40,13 +40,15 @@ type Participant struct {
 	PredestinedRecipient string   `json:"predestinedRecipient,omitempty"`
 }
 
-// TODO (ask): should this be a pointer or not? since the struct contains a slice, the copy of the struct
-// will also contain a copy of that pointer (address); modifying that will modify the original data
-// but modifying other regular fields would **not** modify the original data; for clarity, I reckon
-// this should be a pointer
+// TODO (ask): Should the received by a pointer? Since the struct contains a slice, the copy of the struct
+// will contain a copy of the slice address. Modifying that will modify the original data
+// but modifying other regular fields would **not** modify the original data. For clarity, I reckon
+// this should be a pointer.
+
+// UpdateParticipantEmail updates the email address of the participant at the given index.
 func (d *Data) UpdateParticipantEmail(participantIndex int, curr string, next string) error {
 	if participantIndex >= len(d.Participants) {
-		return fmt.Errorf("Participant with index %v does not exist", participantIndex)
+		return fmt.Errorf("participant with index %v does not exist", participantIndex)
 	}
 
 	(&d.Participants[participantIndex]).Email = next
@@ -68,9 +70,10 @@ func removeFromSlice[K any](slice []K, index int) []K {
 	return append(slice[:index], slice[index+1:]...)
 }
 
+// RemoveParticipant removes a participant at the given index.
 func (d *Data) RemoveParticipant(participantIndex int) error {
 	if participantIndex >= len(d.Participants) {
-		return fmt.Errorf("Participant with index %v does not exist", participantIndex)
+		return fmt.Errorf("participant with index %v does not exist", participantIndex)
 	}
 	removedParticipantEmail := d.Participants[participantIndex].Email
 
@@ -87,7 +90,7 @@ func (d *Data) RemoveParticipant(participantIndex int) error {
 	return nil
 }
 
-// LoadData load data from a JSON file
+// LoadData loads data from a JSON file.
 func LoadData(filePath string) Data {
 	var data Data
 
@@ -121,6 +124,7 @@ func unescapeUnicodeCharactersInJSON(_jsonRaw json.RawMessage) (json.RawMessage,
 }
 
 // TODO (ask): should this be a method on `Data`? or is it better to stick to utils methods
+// SaveData saves the given data into the JSON file at `filePath`.
 func SaveData(filePath string, data Data) {
 	dataJson, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
