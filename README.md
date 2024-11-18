@@ -6,7 +6,7 @@ Santa is a simple CLI app that makes drawing your Secret Santa pairings a breeze
 
 The app enables you to define your participants and the email(s) they will be receiving. Once done, the `send` command randomises the gift-givers and recipients taking all preferences into account. Finally, it fires off the emails.
 
-1. Start by [setting the app up](#lets-get-you-going-)
+1. Start by [setting the app up](#lets-get-you-going-).
 1. Once set up, [test and send your stealthy emails](#sending).
 
 ## Let's get you going 🎄
