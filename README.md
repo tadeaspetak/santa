@@ -4,7 +4,7 @@ Santa is a simple CLI app that makes drawing your Secret Santa pairings a breeze
 
 > 💡 Secret Santa is a gift-exchange tradition where participants anonymously give gifts to a randomly assigned person. I have come to love this way of Christmas due to its promoting quality instead of quantity.
 
-The app enables you to define your participants and the email(s) they will be receiving. Once done, each `send` command randomises the gift-givers and recipients taking all preferences into account. Finally, it sends off the emails.
+The app enables you to define your participants and the email(s) they will be receiving. Once done, the `send` command randomises the gift-givers and recipients taking all preferences into account. Finally, it fires off the emails.
 
 1. Start by [setting the app up](#lets-get-you-going-)
 1. Once set up, [test and send your stealthy emails](#sending).
@@ -13,7 +13,7 @@ The app enables you to define your participants and the email(s) they will be re
 
 First of, download the app from [https://github.com/tadeaspetak/santa/releases/latest](https://github.com/tadeaspetak/santa/releases/latest).
 
-> ⚠️ If you're on Mac, make the file executable with `chmod +x santa-mac`. When running, you'll have to override the security check (click the ❔) and allow the app to run.
+> ⚠️ If you're on Mac, make the file executable with `chmod +x santa-mac`. When running, you'll have to override the security check and allow the app to run (click the ❔).
 
 Run the `init` command from your terminal, like `./santa-mac init`. This command will help you with the basic setup:
 
@@ -53,7 +53,7 @@ Consider the following as a reasonable starting point:
 
 ### Participants
 
-The `participants` array defines the participants in your Secret Santa. Use commands underneath the `participants` parent command (`add`, `delete` and `edit`) to manage your participants.
+The `participants` array defines the participants in your Secret Santa. To manage your participants, use the `participants` command folder (`add`, `delete` and `edit`).
 
 Each participant has the following attributes:
 
