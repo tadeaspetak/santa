@@ -46,7 +46,7 @@ var sendCmd = &cobra.Command{
 			log.Fatalf(`There has been an error sending your emails: %v`, err)
 		}
 
-		fmt.Println(`Your emails have been successfully sent out!`)
+		fmt.Println(`Your emails have been sent out successfully!`)
 	},
 }
 
