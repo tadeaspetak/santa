@@ -59,14 +59,14 @@ var initCmd = &cobra.Command{
 		} else {
 			fmt.Print("\nYour Mailgun config is already present.")
 		}
-		fmt.Print("\n(Note that you can always edit your mailgun settings using the `mailgun` command.)\n\n")
+		fmt.Print("\n(You can always edit your mailgun settings using the `mailgun` command.)\n\n")
 
 		if !hasTemplate {
 			templateCmd.Run(cmd, args)
 		} else {
 			fmt.Print("\nYour email template is already configured, let's move on to participants.")
 		}
-		fmt.Print("\n(Note that you can always edit your template settings using the `template` command.)\n\n")
+		fmt.Print("\n(You can always edit your template settings using the `template` command.)\n\n")
 
 		if !hasParticipants {
 			fmt.Print(

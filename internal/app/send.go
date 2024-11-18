@@ -35,6 +35,7 @@ func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug b
 
 		// don't send anything when debugging
 		if isDebug {
+			fmt.Printf("DEBUG: Would be sending an email to %s (batch file generated).", recipient)
 			continue
 		}
 

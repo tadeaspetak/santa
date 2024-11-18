@@ -13,7 +13,7 @@ var RootCmd = &cobra.Command{
 	Short: "generate your secret santa pairings easily",
 	Long: `Santa is a simple CLI app that makes drawing your Secret Santa pairings a breeze.
 
-  For more info, head over to the README at https://github.com/tadeaspetak/santa/blob/main/README.md`,
+For more info, head over to the README at https://github.com/tadeaspetak/santa/blob/main/README.md`,
 }
 
 func Execute() {
@@ -24,6 +24,9 @@ func Execute() {
 }
 
 func init() {
+	// disable the default completion command
+	RootCmd.CompletionOptions.DisableDefaultCmd = true
+
 	RootCmd.PersistentFlags().String(cmdData.DataPathFlagName, "data.json", "data file path")
 
 	RootCmd.AddCommand(participants.ParticipantsCmd)

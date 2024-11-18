@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"log"
 	"slices"
 
@@ -64,7 +63,6 @@ func PairParticipants(participants []data.Participant, maxAttemptCount int) []pa
 		}
 
 		if len(actualPotentialRecipients) == 0 {
-			fmt.Printf("No recipients for %s, let's try again.\n\n\n\n\n", giver.Email)
 			return PairParticipants(participants, maxAttemptCount-1)
 		}
 
