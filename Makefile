@@ -12,6 +12,7 @@ run:
 
 test:
 	go test ./...
+	rm internal/app/santa-batch-*
 
 fmt:
 	go fmt ./...
