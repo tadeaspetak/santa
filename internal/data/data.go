@@ -40,11 +40,6 @@ type Participant struct {
 	PredestinedRecipient string   `json:"predestinedRecipient,omitempty"`
 }
 
-// TODO (ask): Should the received by a pointer? Since the struct contains a slice, the copy of the struct
-// will contain a copy of the slice address. Modifying that will modify the original data
-// but modifying other regular fields would **not** modify the original data. For clarity, I reckon
-// this should be a pointer.
-
 // UpdateParticipantEmail updates the email address of the participant at the given index.
 func (d *Data) UpdateParticipantEmail(participantIndex int, curr string, next string) error {
 	if participantIndex >= len(d.Participants) {
@@ -123,8 +118,6 @@ func unescapeUnicodeCharactersInJSON(_jsonRaw json.RawMessage) (json.RawMessage,
 	return []byte(str), nil
 }
 
-// TODO (ask): should this be a method on `Data`? or is it better to stick to utils methods
-// SaveData saves the given data into the JSON file at `filePath`.
 func SaveData(filePath string, data Data) {
 	dataJson, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {

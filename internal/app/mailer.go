@@ -9,8 +9,6 @@ import (
 )
 
 type mailer interface {
-	// TODO (ask): would it be better to use an anonymous struct here
-	// instead of ordered strings which are very easy to misplace?
 	send(sender, subject, body, recipient, replyTo string) error
 }
 

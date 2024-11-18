@@ -9,7 +9,6 @@ import (
 
 var DataPathFlagName = "data"
 
-// TODO (ask): is this a good way to do inheritance by composition that go promotes?
 type CmdData struct {
 	cmd *cobra.Command
 	data.Data
