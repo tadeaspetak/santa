@@ -4,6 +4,8 @@ Santa is a simple CLI app that makes drawing your Secret Santa pairings a breeze
 
 > 💡 Secret Santa is a gift-exchange tradition where participants anonymously give gifts to a randomly assigned person. I have come to love this way of Christmas due to its promoting quality instead of quantity.
 
+The app enables you to define your participants and the email(s) they will be receiving. Once done, each `send` command randomises the gift-givers and recipients taking all preferences into account. Finally, it sends off the emails.
+
 1. Start by [setting the app up](#lets-get-you-going-)
 1. Once set up, [test and send your stealthy emails](#sending).
 
@@ -33,7 +35,7 @@ Once done, use the `mailgun` command to enter the domain and your API key.
 
 ### Email template
 
-Each participant will receive an email constructed based on your template. The email should inform them of who they shall be picking a gift for this year.
+Each participant will receive an email constructed based on your template. The email should inform them of who they shall be picking a gift for this year. Use the `template` command to adjust your template.
 
 1. In `subject` and `body`, you have the `%{recipientSalutation}` variable at your disposal. This will be replaced by the value of the `salutation` from the recipient.
 2. `body` is automatically wrapped in `<html><body>`.
@@ -51,7 +53,9 @@ Consider the following as a reasonable starting point:
 
 ### Participants
 
-The `participants` array defines the participants in your Secret Santa. You have the following options:
+The `participants` array defines the participants in your Secret Santa. Use commands underneath the `participants` parent command (`add`, `delete` and `edit`) to manage your participants.
+
+Each participant has the following attributes:
 
 - `email` (required): participant email address (must be unique)
 - `salutation` (required): a salutation used when replacing the `%{recipientSalutation}` variable in the [email template](#email-template)
@@ -90,7 +94,7 @@ In the example below, `Mom` and `Dad` won't ever need to give a gift to each oth
 
 ## <a name="sending">Sending</a>
 
-Alright, so you've set up your Mailgun, template and participants, and now you're ready to send it all out 🦉
+Alright, so you've set up your Mailgun, template and participants, and now you're ready to send it all out 🦉 This is where the `send` command finally enters the game. Before using it, read on.
 
 ### Logs
 
