@@ -14,12 +14,13 @@ test:
 	go test ./...
 	rm internal/app/santa-batch-*
 
-fmt:
+vet:
+	go vet ./...
+
+fmt: vet
 	go fmt ./...
 
 lint: fmt
-	make tools
-	go vet ./...
 	staticcheck ./...
 
 build: lint

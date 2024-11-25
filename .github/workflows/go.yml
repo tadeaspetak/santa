@@ -7,15 +7,26 @@ on:
     branches: ["main"]
 
 jobs:
-  build:
+  ci:
+  name: "Run CI"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
+      - name: Check out the repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: "1.23"
-
+      - name: vet & fmt
+        run: make fmt
       - name: Test
         run: make test
+      - name: Static check
+        uses: dominikh/staticcheck-action@v1.2.0
+        with:
+          version: "2022.1.1"
+          install-go: false
+
+

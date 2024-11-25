@@ -118,6 +118,7 @@ func unescapeUnicodeCharactersInJSON(_jsonRaw json.RawMessage) (json.RawMessage,
 	return []byte(str), nil
 }
 
+// SaveData saves the given data into the JSON file at `filePath`.
 func SaveData(filePath string, data Data) {
 	dataJson, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
