@@ -8,7 +8,7 @@ on:
 
 jobs:
   ci:
-  name: "Run CI"
+    name: "Run CI"
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -28,5 +28,3 @@ jobs:
         with:
           version: "2022.1.1"
           install-go: false
-
-
