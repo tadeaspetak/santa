@@ -3,6 +3,7 @@ module github.com/tadeaspetak/santa
 go 1.23
 
 require (
+	github.com/go-pdf/fpdf v0.9.0
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/mailgun/mailgun-go/v4 v4.15.2
 	github.com/manifoldco/promptui v0.9.0
@@ -17,10 +18,11 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
+	github.com/k3a/html2text v1.2.1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 // indirect
-	github.com/pkg/errors v0.8.1 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.19.0 // indirect
 	golang.org/x/net v0.21.0 // indirect

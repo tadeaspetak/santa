@@ -2,15 +2,67 @@ package app
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
+	"unicode"
 
+	"github.com/go-pdf/fpdf"
+	"github.com/k3a/html2text"
 	"github.com/tadeaspetak/santa/internal/data"
 )
 
+// removeSymbols removes symbols because fpdf fails e.g. on emojis.
+//
+// In fpdf, character widths are capped at 256*256 (https://github.com/jung-kurt/gofpdf/blob/514e371ce761f71cf004bf0da3246824310b2e4f/utf8fontfile.go#L838).
+// See also https://github.com/jung-kurt/gofpdf/issues/255.
+// Based on the above, I tried r < 65536, but passing a snowman ⛄ (9924) still breaks, so let's just skip symbols for now 🤷‍♀️
+func removeSymbols(str string) string {
+	return strings.TrimSpace(strings.Map(func(r rune) rune {
+		if !unicode.IsSymbol(r) {
+			return r
+		}
+
+		return -1
+	}, str))
+}
+
+func addPDFPage(pdf *fpdf.Fpdf, emailRecipient, subject, body string) {
+	multiLineHeight := 4
+	availablePageHeight := 270
+
+	message := removeSymbols(html2text.HTML2Text(fmt.Sprintf("%s\n\n%s", subject, body)))
+	pdf.SetFont("Arial", "", 12)
+	lines := pdf.SplitText(message, 190)
+
+	pdf.AddPage()
+	pdf.SetFont("Arial", "B", 20)
+	pdf.CellFormat(
+		0,
+		float64(availablePageHeight-(len(lines)*multiLineHeight)),
+		emailRecipient,
+		"",
+		1,
+		"CM",
+		false,
+		0,
+		"",
+	)
+
+	pdf.SetFont("Arial", "", 12)
+	pdf.MultiCell(0, float64(multiLineHeight), message, "", "L", false)
+}
+
 func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug bool, alwaysSendTo string) error {
 	batchDate := time.Now().Local().Format("20060102-150405")
+
+	pdf := fpdf.New("P", "mm", "A4", "")
+	// Set all margins to 10 **except** the bottom one. The bottom one is
+	// set to 17 for the convenience of calculation. That way, each page has
+	// 297 - 10 - 17 = 270mm of height at its disposal.
+	pdf.SetMargins(10, 10, 10)
+	pdf.SetAutoPageBreak(true, 17)
 
 	for _, pair := range pairs {
 		// prefer the email provided via the `alwaysSendTo` flag for testing purposes
@@ -32,6 +84,8 @@ func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug b
 		if err != nil {
 			return fmt.Errorf("unable to write a history batch file %v", err)
 		}
+
+		addPDFPage(pdf, pair.giver.Email, subject, body)
 
 		// don't send anything when debugging
 		if isDebug {
@@ -55,6 +109,11 @@ func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug b
 
 		fmt.Printf("Email to %s sent successfully\n", recipient)
 
+	}
+
+	err := pdf.OutputFileAndClose(fmt.Sprintf("santa-batch-%s.pdf", batchDate))
+	if err != nil {
+		log.Fatalf("Could not generate PDF: %v", err)
 	}
 
 	return nil
