@@ -46,7 +46,7 @@ Consider the following as a reasonable starting point:
 ```json
 {
   "subject": "🎄 Find a gift for %{recipientSalutation}",
-  "body": "<p>Hi</p><p>Come up with something lovely for %{recipientSalutation}.</p><p>Happy hunting,<br/>Your 🎅</p>",
+  "body": "<p>Hi</p><p>Come up with something lovely for %{recipientSalutation}.</p><p>Happy hunting,<br/>Your Santa 🎅</p>",
   "sender": "santa@mg.your-domain.com"
 }
 ```
