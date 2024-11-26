@@ -105,9 +105,9 @@ Every (about to be) sent email is saved in a `santa-batch-%datetime-%giftgiver.t
 
 Steer away from opening those files on real runs to keep yourself in the dark together with everyone else.
 
-### Printed PDF
+### Printable PDF
 
-Every batch also generates a printed PDF. Its construction is simple:
+Every batch also generates a printable PDF. Its construction is simple:
 
 1. The first and the last pages are empty so that if you open / print this file, you won't see anything by mistake.
 2. All other pages have the gift-giver (=email recipient) at the top half of the page and the message (subject + body) at the bottom half. That way, you can always e.g. fold the pages in such a way that you won't see anything.

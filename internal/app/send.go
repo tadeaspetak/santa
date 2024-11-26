@@ -63,6 +63,7 @@ func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug b
 	// 297 - 10 - 17 = 270mm of height at its disposal.
 	pdf.SetMargins(10, 10, 10)
 	pdf.SetAutoPageBreak(true, 17)
+	pdf.AddPage()
 
 	for _, pair := range pairs {
 		// prefer the email provided via the `alwaysSendTo` flag for testing purposes
@@ -111,6 +112,7 @@ func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug b
 
 	}
 
+	pdf.AddPage()
 	err := pdf.OutputFileAndClose(fmt.Sprintf("santa-batch-%s.pdf", batchDate))
 	if err != nil {
 		log.Fatalf("Could not generate PDF: %v", err)
