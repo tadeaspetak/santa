@@ -4,21 +4,15 @@ import (
 	"log"
 	"slices"
 
-	"math/rand"
-
 	"github.com/tadeaspetak/santa/internal/data"
 )
 
-func getRandomIndexInArray[T any](arr []T) int {
-	return rand.Intn(len(arr))
+type giverWithRecipients struct {
+	giver      data.Participant
+	recipients []data.Person
 }
 
-type participantPair struct {
-	giver     data.Participant
-	recipient data.Participant
-}
-
-func PairParticipants(participants []data.Participant, maxAttemptCount int) []participantPair {
+func pairParticipants(participants []data.Participant, maxAttemptCount int) []giverWithRecipients {
 	if maxAttemptCount <= 0 {
 		log.Fatalf(
 			"Too many failed attempts to pair participants! Try again or adjust your data, such as predestined or excluded recipients, to make pairing participants possible.",
@@ -34,16 +28,15 @@ func PairParticipants(participants []data.Participant, maxAttemptCount int) []pa
 		}
 	}
 
-	// potential recipients start as everyone except the predestined ones
-	remainingPotentialRecipients := map[string]data.Participant{}
+	// recipients start as everyone except the predestined ones
+	remainingRecipients := map[string]data.Participant{}
 	for _, p := range participants {
-		participantsByMail[p.Email] = p
 		if slices.Index(predestinedEmails, p.Email) == -1 {
-			remainingPotentialRecipients[p.Email] = p
+			remainingRecipients[p.Email] = p
 		}
 	}
 
-	paired := make([]participantPair, len(participants))
+	paired := make([]giverWithRecipients, len(participants))
 	for i, giver := range participants {
 		// the recipient is predestined, just assign them
 		if giver.PredestinedRecipient != "" {
@@ -51,25 +44,39 @@ func PairParticipants(participants []data.Participant, maxAttemptCount int) []pa
 			if !ok {
 				log.Fatalf("Predestined recipient %s does not exist.", giver.PredestinedRecipient)
 			}
-			paired[i] = participantPair{giver: giver, recipient: recipient}
+			paired[i] = giverWithRecipients{giver: giver, recipients: []data.Person{recipient.Person}}
 			continue
 		}
 
-		actualPotentialRecipients := make([]data.Participant, 0)
-		for _, p := range remainingPotentialRecipients {
+		potentialRecipients := make([]data.Participant, 0)
+		for _, p := range remainingRecipients {
 			if giver.Email != p.Email && slices.Index(giver.ExcludedRecipients, p.Email) == -1 {
-				actualPotentialRecipients = append(actualPotentialRecipients, p)
+				potentialRecipients = append(potentialRecipients, p)
 			}
 		}
 
-		if len(actualPotentialRecipients) == 0 {
-			return PairParticipants(participants, maxAttemptCount-1)
+		if len(potentialRecipients) == 0 {
+			return pairParticipants(participants, maxAttemptCount-1)
 		}
 
 		// get a random recipient, add to the paried and remove from potential
-		actualRecipient := actualPotentialRecipients[getRandomIndexInArray(actualPotentialRecipients)]
-		paired[i] = participantPair{giver: giver, recipient: actualRecipient}
-		delete(remainingPotentialRecipients, actualRecipient.Email)
+		recipient := potentialRecipients[getRandomIndexInArray(potentialRecipients)]
+		paired[i] = giverWithRecipients{giver: giver, recipients: []data.Person{recipient.Person}}
+		delete(remainingRecipients, recipient.Email)
+	}
+
+	return paired
+}
+
+func Pair(participants []data.Participant, extraRecipients []data.Extra) []giverWithRecipients {
+	paired := pairParticipants(participants, 5)
+
+	if len(extraRecipients) > 0 {
+		extras := pairExtras(extraRecipients, participants)
+		for _, e := range extras {
+			i := slices.IndexFunc(paired, func(g giverWithRecipients) bool { return g.giver.Email == e.giver.Email })
+			paired[i].recipients = append(paired[i].recipients, e.Person)
+		}
 	}
 
 	return paired

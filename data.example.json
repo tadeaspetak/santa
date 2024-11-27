@@ -6,7 +6,8 @@
   "template": {
     "subject": "🎄 Find a gift for %{recipientSalutation}",
     "body": "<p>Hi</p><p>Come up with something lovely for %{recipientSalutation}.</p><p>Happy hunting,<br/>Your Santa 🎅</p>",
-    "sender": "santa@mg.your-domain.com"
+    "sender": "santa@mg.your-domain.com",
+    "recipientsSeparator": " and "
   },
   "participants": [
     {
@@ -26,11 +27,21 @@
     {
       "email": "emily@family.com",
       "salutation": "Emily",
-      "predestinedRecipient": "aunt@family.com"
+      "predestinedRecipient": "auntie@family.com"
     },
     {
       "email": "jake@family.com",
       "salutation": "Jake"
+    }
+  ],
+  "extraRecipients": [
+    {
+      "salutation": "Auntie's toddler",
+      "excludedGivers": ["auntie@family.com"]
+    },
+    {
+      "salutation": "Jake's toddler",
+      "excludedGivers": ["jake@family.com", "emily@family.com"]
     }
   ]
 }

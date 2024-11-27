@@ -40,6 +40,7 @@ Each participant will receive an email constructed based on your template. The e
 1. In `subject` and `body`, you have the `%{recipientSalutation}` variable at your disposal. This will be replaced by the value of the `salutation` from the recipient.
 2. `body` is automatically wrapped in `<html><body>`.
 3. `sender` must be on the domain from the [Mailgun section](#mailgun).
+4. The `recipientsSeparator` separates multiple gift-recipients. This is only important in cases where [extra recipients](#extra-recipients) have been supplied.
 
 Consider the following as a reasonable starting point:
 
@@ -47,7 +48,8 @@ Consider the following as a reasonable starting point:
 {
   "subject": "🎄 Find a gift for %{recipientSalutation}",
   "body": "<p>Hi</p><p>Come up with something lovely for %{recipientSalutation}.</p><p>Happy hunting,<br/>Your Santa 🎅</p>",
-  "sender": "santa@mg.your-domain.com"
+  "sender": "santa@mg.your-domain.com",
+  "recipientsSeparator": " and "
 }
 ```
 
@@ -92,6 +94,31 @@ In the example below, `Mom` and `Dad` won't ever need to give a gift to each oth
   ]
 ```
 
+#### Extra recipients
+
+Say that you have babies, toddlers or small kids in your family. You might want them to **receive** presents, but they wouldn't be giving anything to anyone quite yet.
+
+That's where the `extraRecipients` property comes in. You define those who will be assigned to the gift-givers (`participants`) as gift-recipients, but they will **not** be giving presents to anyone.
+
+You can use the `excludedGivers` property on each of the `extraRecipients` to make sure certain people will **not** get that particular extra recipient assigned.
+
+```json
+"extraRecipients": [
+  {
+    "salutation": "Auntie's toddler",
+    "excludedGivers": ["auntie@family.com"]
+  },
+  {
+    "salutation": "Jake's toddler",
+    "excludedGivers": ["jake@family.com", "emily@family.com"]
+  }
+]
+```
+
+Note that you might also want to adjust the `recipientsSeparator` in the `template`.
+
+> ❗ You'll have to edit these manully in your `data.json` file, they don't have any CLI support (yet).
+
 ## <a name="sending">Sending</a>
 
 Alright, so you've set up your Mailgun, template and participants, and now you're ready to send it all out 🦉 This is where the `send` command finally enters the game. Before using it, read on.
@@ -107,12 +134,12 @@ Steer away from opening those files on real runs to keep yourself in the dark to
 
 ### Printable PDF
 
-Every batch also generates a printable PDF. Its construction is simple:
+If you'd like to generate a printable PDF when sending a batch, use the `-p` flag. The construction of the PDF is simple:
 
 1. The first and the last pages are empty so that if you open / print this file, you won't see anything by mistake.
 2. All other pages have the gift-giver (=email recipient) at the top half of the page and the message (subject + body) at the bottom half. That way, you can always e.g. fold the pages in such a way that you won't see anything.
 
-If you're only interested in generating such a PDF, run `send -d` (more details below).
+If you're only interested in generating such a PDF, run `send  -p -d` (more details on the `-d` flag below).
 
 ### Debugging & testing
 

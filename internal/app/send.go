@@ -13,6 +13,14 @@ import (
 	"github.com/tadeaspetak/santa/internal/data"
 )
 
+func mapOver[K any, V any](slice []K, predicate func(v K) V) []V {
+	result := make([]V, len(slice))
+	for i, v := range slice {
+		result[i] = predicate(v)
+	}
+	return result
+}
+
 // removeSymbols removes symbols because fpdf fails e.g. on emojis.
 //
 // In fpdf, character widths are capped at 256*256 (https://github.com/jung-kurt/gofpdf/blob/514e371ce761f71cf004bf0da3246824310b2e4f/utf8fontfile.go#L838).
@@ -32,7 +40,9 @@ func addPDFPage(pdf *fpdf.Fpdf, emailRecipient, subject, body string) {
 	multiLineHeight := 4
 	availablePageHeight := 270
 
-	message := removeSymbols(html2text.HTML2Text(fmt.Sprintf("%s\n\n%s", subject, body)))
+	cleanSubject := removeSymbols(subject)
+	cleanBody := removeSymbols(html2text.HTML2Text(body))
+	message := fmt.Sprintf("%s\n\n%s", cleanSubject, cleanBody)
 	pdf.SetFont("Arial", "", 12)
 	lines := pdf.SplitText(message, 190)
 
@@ -54,25 +64,45 @@ func addPDFPage(pdf *fpdf.Fpdf, emailRecipient, subject, body string) {
 	pdf.MultiCell(0, float64(multiLineHeight), message, "", "L", false)
 }
 
-func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug bool, alwaysSendTo string) error {
+type SendOpts struct {
+	AlwaysSendTo   string
+	IsDebug        bool
+	ShouldPrintPdf bool
+}
+
+func Send(
+	mlr mailer,
+	pairs []giverWithRecipients,
+	template data.Template,
+	opts SendOpts,
+) error {
 	batchDate := time.Now().Local().Format("20060102-150405")
 
-	pdf := fpdf.New("P", "mm", "A4", "")
-	// Set all margins to 10 **except** the bottom one. The bottom one is
-	// set to 17 for the convenience of calculation. That way, each page has
-	// 297 - 10 - 17 = 270mm of height at its disposal.
-	pdf.SetMargins(10, 10, 10)
-	pdf.SetAutoPageBreak(true, 17)
-	pdf.AddPage()
+	var pdf *fpdf.Fpdf
+	if opts.ShouldPrintPdf {
+		pdf = fpdf.New("P", "mm", "A4", "")
+		// Set all margins to 10 **except** the bottom one. The bottom one is
+		// set to 17 for the convenience of calculation. That way, each page has
+		// 297 - 10 - 17 = 270mm of height at its disposal.
+		pdf.SetMargins(10, 10, 10)
+		pdf.SetAutoPageBreak(true, 17)
+		pdf.AddPage()
+	}
 
 	for _, pair := range pairs {
 		// prefer the email provided via the `alwaysSendTo` flag for testing purposes
-		recipient := alwaysSendTo
+		recipient := opts.AlwaysSendTo
 		if recipient == "" {
 			recipient = pair.giver.Email
 		}
 
-		replacer := strings.NewReplacer("%{recipientSalutation}", pair.recipient.Salutation)
+		separator := template.RecipientsSeparator
+		if separator == "" {
+			separator = " and "
+		}
+		salutations := mapOver(pair.recipients, func(v data.Person) string { return v.Salutation })
+		replacer := strings.NewReplacer("%{recipientSalutation}", strings.Join(salutations, separator))
+
 		subject := replacer.Replace(template.Subject)
 		body := replacer.Replace(fmt.Sprintf(`<html><body>%s</body></html>`, template.Body))
 
@@ -86,10 +116,12 @@ func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug b
 			return fmt.Errorf("unable to write a history batch file %v", err)
 		}
 
-		addPDFPage(pdf, pair.giver.Email, subject, body)
+		if opts.ShouldPrintPdf {
+			addPDFPage(pdf, pair.giver.Email, subject, body)
+		}
 
 		// don't send anything when debugging
-		if isDebug {
+		if opts.IsDebug {
 			fmt.Printf("DEBUG: Would be sending an email to %s (batch file generated).\n", recipient)
 			continue
 		}
@@ -112,10 +144,12 @@ func Send(mlr mailer, pairs []participantPair, template data.Template, isDebug b
 
 	}
 
-	pdf.AddPage()
-	err := pdf.OutputFileAndClose(fmt.Sprintf("santa-batch-%s.pdf", batchDate))
-	if err != nil {
-		log.Fatalf("Could not generate PDF: %v", err)
+	if opts.ShouldPrintPdf {
+		pdf.AddPage()
+		err := pdf.OutputFileAndClose(fmt.Sprintf("santa-batch-%s.pdf", batchDate))
+		if err != nil {
+			log.Fatalf("Could not generate PDF: %v", err)
+		}
 	}
 
 	return nil

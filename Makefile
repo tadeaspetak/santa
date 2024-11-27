@@ -12,6 +12,7 @@ run:
 
 test:
 	go test ./...
+	rm santa-batch-*
 	rm internal/app/santa-batch-*
 
 vet:
@@ -28,7 +29,7 @@ build: lint
 	env GOOS=windows GOARCH=amd64 go build $(VERSION_LDFLAG) -o ./bin/santa-win.exe .
 
 clean:
-	rm -rf ./bin/$(APP_NAME)
+	rm -rf ./bin
 
 tools:
 	go install honnef.co/go/tools/cmd/staticcheck@latest

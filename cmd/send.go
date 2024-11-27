@@ -12,6 +12,7 @@ import (
 
 var isDebugFlagName = "debug"
 var alwaysSendToFlagName = "alwaysSendTo"
+var shouldPrintPdfFlagName = "printPdf"
 
 var sendCmd = &cobra.Command{
 	Use:   "send",
@@ -34,12 +35,20 @@ var sendCmd = &cobra.Command{
 			log.Fatalf("Unable to get the %s flag: %v", alwaysSendToFlagName, err)
 		}
 
+		shouldPrintPdf, err := cmd.Flags().GetBool(shouldPrintPdfFlagName)
+		if err != nil {
+			log.Fatalf("Unable to get the %s flag: %v", shouldPrintPdfFlagName, err)
+		}
+
 		err = app.Send(
 			app.NewMailgunMailer(dat.Mailgun.Domain, dat.Mailgun.APIKey),
-			app.PairParticipants(dat.Participants, 5),
+			app.Pair(dat.Participants, dat.Extras),
 			dat.Data.Template,
-			isDebug,
-			alwaysSendTo,
+			app.SendOpts{
+				AlwaysSendTo:   alwaysSendTo,
+				IsDebug:        isDebug,
+				ShouldPrintPdf: shouldPrintPdf,
+			},
 		)
 
 		if err != nil {
@@ -53,5 +62,7 @@ var sendCmd = &cobra.Command{
 func init() {
 	sendCmd.Flags().BoolP(isDebugFlagName, "d", false, "turn the debug mode on (won't send emails)")
 	sendCmd.Flags().
-		StringP(alwaysSendToFlagName, "a", "", "send all emails to the given address (for testing purposes)")
+		StringP(alwaysSendToFlagName, "a", "", "send all emails to the given email address (for testing purposes)")
+	sendCmd.Flags().
+		BoolP(shouldPrintPdfFlagName, "p", false, "generate a printable pdf with the pairings")
 }

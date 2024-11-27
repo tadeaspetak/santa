@@ -45,10 +45,10 @@ var AddCmd = &cobra.Command{
 		}
 
 		// add a participant
-		dat.Participants = append(dat.Participants, data.Participant{
-			Email:      email,
-			Salutation: salutation,
-		})
+		dat.Participants = append(
+			dat.Participants,
+			data.Participant{Person: data.Person{Salutation: salutation}, Email: email},
+		)
 		dat.Save()
 		fmt.Printf("\nA new participant with an email '%v' and a salutation '%v' has been added.", email, salutation)
 	},

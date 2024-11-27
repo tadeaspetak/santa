@@ -34,30 +34,33 @@ func (m *mockMailer) send(sender, subject, body, recipient, replyTo string) erro
 }
 
 func TestSend(t *testing.T) {
-	p1 := data.Participant{Email: "p1", Salutation: "s1"}
-	p2 := data.Participant{Email: "p2", Salutation: "s2"}
-	p3 := data.Participant{Email: "p3", Salutation: "s3"}
+	p1 := data.Participant{Person: data.Person{Salutation: "s1"}, Email: "p1"}
+	p2 := data.Participant{Person: data.Person{Salutation: "s2"}, Email: "p2"}
+	p3 := data.Participant{Person: data.Person{Salutation: "s3"}, Email: "p3"}
+
+	e4 := data.Extra{Person: data.Person{Salutation: "e4"}}
+	e5 := data.Extra{Person: data.Person{Salutation: "e5"}}
 
 	mailer := mockMailer{}
 	Send(
 		&mailer,
-		[]participantPair{
-			participantPair{giver: p1, recipient: p2},
-			participantPair{giver: p2, recipient: p3},
-			participantPair{giver: p3, recipient: p1},
+		[]giverWithRecipients{
+			{giver: p1, recipients: []data.Person{p2.Person, e4.Person}},
+			{giver: p2, recipients: []data.Person{p3.Person, e5.Person}},
+			{giver: p3, recipients: []data.Person{p1.Person}},
 		},
 		data.Template{
-			Subject: "sub %{recipientSalutation}",
-			Body:    "bod %{recipientSalutation}",
-			Sender:  "sender",
+			Subject:             "sub %{recipientSalutation}",
+			Body:                "bod %{recipientSalutation}",
+			Sender:              "sender",
+			RecipientsSeparator: ", ",
 		},
-		false,
-		"",
+		SendOpts{},
 	)
 	expected := []mail{
-		mail{"sender", "sub s2", "<html><body>bod s2</body></html>", "p1", "p1"},
-		mail{"sender", "sub s3", "<html><body>bod s3</body></html>", "p2", "p2"},
-		mail{"sender", "sub s1", "<html><body>bod s1</body></html>", "p3", "p3"},
+		{"sender", "sub s2, e4", "<html><body>bod s2, e4</body></html>", "p1", "p1"},
+		{"sender", "sub s3, e5", "<html><body>bod s3, e5</body></html>", "p2", "p2"},
+		{"sender", "sub s1", "<html><body>bod s1</body></html>", "p3", "p3"},
 	}
 	if !reflect.DeepEqual(mailer.mails, expected) {
 		t.Fatalf(`

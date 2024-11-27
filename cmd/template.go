@@ -24,6 +24,9 @@ Use '%{recipientSalutation}' (without the aposotrophes) to substitute the recipi
 		dat.Template.Body = strings.TrimSpace(prompt.PromptStringEdit("Body", dat.Template.Body))
 		dat.Template.Subject = strings.TrimSpace(prompt.PromptStringEdit("Subject", dat.Template.Subject))
 		dat.Template.Sender = strings.TrimSpace(prompt.PromptStringEdit("Sender", dat.Template.Sender))
+		// note: do not trim spaces here, they are most likely intentional
+		dat.Template.RecipientsSeparator =
+			prompt.PromptStringEdit("RecipientsSeparator", dat.Template.RecipientsSeparator)
 
 		dat.Save()
 		fmt.Print("\nSaved the template.\n\n")

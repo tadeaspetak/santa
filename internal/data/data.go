@@ -16,14 +16,16 @@ import (
 type Data struct {
 	Template     Template      `json:"template"`
 	Mailgun      Mailgun       `json:"mailgun"`
-	Participants []Participant `json:"participants,omitempty" validate:"min=2,dive"`
+	Participants []Participant `json:"participants,omitempty"    validate:"min=2,dive"`
+	Extras       []Extra       `json:"extraRecipients,omitempty" validate:"dive"`
 }
 
 // Template defines the email(s) to be sent out to participants.
 type Template struct {
-	Body    string `json:"body,omitempty"    validate:"required"`
-	Subject string `json:"subject,omitempty" validate:"required"`
-	Sender  string `json:"sender,omitempty"  validate:"required,email"`
+	Body                string `json:"body,omitempty"                validate:"required"`
+	Subject             string `json:"subject,omitempty"             validate:"required"`
+	Sender              string `json:"sender,omitempty"              validate:"required,email"`
+	RecipientsSeparator string `json:"recipientsSeparator,omitempty"`
 }
 
 // Mailgun contains the Mailgun-related config.
@@ -32,12 +34,22 @@ type Mailgun struct {
 	APIKey string `json:"apiKey,omitempty" validate:"required"`
 }
 
+type Person struct {
+	Salutation string `json:"salutation" validate:"required"`
+}
+
 // Participant is the definition of each participant.
 type Participant struct {
+	Person
 	Email                string   `json:"email"                          validate:"required,email"`
-	Salutation           string   `json:"salutation"                     validate:"required"`
 	ExcludedRecipients   []string `json:"excludedRecipients,omitempty"`
 	PredestinedRecipient string   `json:"predestinedRecipient,omitempty"`
+}
+
+// Extra is the definition of each extra recipient.
+type Extra struct {
+	Person
+	ExcludedGivers []string `json:"excludedGivers,omitempty"`
 }
 
 // UpdateParticipantEmail updates the email address of the participant at the given index.

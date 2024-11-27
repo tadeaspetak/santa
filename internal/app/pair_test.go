@@ -2,30 +2,30 @@ package app
 
 import (
 	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/tadeaspetak/santa/internal/data"
 )
 
-func TestPairParticipantsDeterministic(t *testing.T) {
-	p1 := data.Participant{Email: "p1", PredestinedRecipient: "p2"}
-	p2 := data.Participant{Email: "p2", ExcludedRecipients: []string{"p1"}}
-	p3 := data.Participant{Email: "p3"}
+func TestPairDeterministic(t *testing.T) {
+	p1 := data.Participant{Person: data.Person{Salutation: "p1"}, Email: "p1", PredestinedRecipient: "p2"}
+	p2 := data.Participant{Person: data.Person{Salutation: "p2"}, Email: "p2", ExcludedRecipients: []string{"p1"}}
+	p3 := data.Participant{Person: data.Person{Salutation: "p3"}, Email: "p3"}
 	participants := []data.Participant{p1, p2, p3}
 
-	expected := []participantPair{
-		participantPair{giver: p1, recipient: p2},
-		participantPair{giver: p2, recipient: p3},
-		participantPair{giver: p3, recipient: p1},
+	expected := []giverWithRecipients{
+		{giver: p1, recipients: []data.Person{p2.Person}},
+		{giver: p2, recipients: []data.Person{p3.Person}},
+		{giver: p3, recipients: []data.Person{p1.Person}},
 	}
 
-	// randomness is involved in the `PairParticipants` function,
-	// let's run this 5 times to be on the safe side
-	for range 5 {
-		result := PairParticipants(participants, 5)
+	// Let's run 10 times to account for the randomness in the `PairParticipants` function.
+	for range 10 {
+		result := Pair(participants, []data.Extra{})
 		if !reflect.DeepEqual(result, expected) {
 			t.Fatalf(`
-        PairParticipants not equal!
+        Pairing not equal!
         Expected: %v
         -----
         Got: %v
@@ -34,48 +34,107 @@ func TestPairParticipantsDeterministic(t *testing.T) {
 	}
 }
 
-func TestPairParticipantsRandom(t *testing.T) {
-	p1 := data.Participant{Email: "p1"}
-	p2 := data.Participant{Email: "p2"}
-	p3 := data.Participant{Email: "p3"}
+type option struct {
+	recipients []giverWithRecipients
+	stats      int
+}
+
+func TestPairRandom(t *testing.T) {
+	p1 := data.Participant{Person: data.Person{Salutation: "p1"}, Email: "p1"}
+	p2 := data.Participant{Person: data.Person{Salutation: "p2"}, Email: "p2"}
+	p3 := data.Participant{Person: data.Person{Salutation: "p3"}, Email: "p3"}
 	participants := []data.Participant{p1, p2, p3}
 
-	result1 := []participantPair{
-		participantPair{giver: p1, recipient: p2},
-		participantPair{giver: p2, recipient: p3},
-		participantPair{giver: p3, recipient: p1},
+	options := []option{
+		{recipients: []giverWithRecipients{
+			{giver: p1, recipients: []data.Person{p2.Person}},
+			{giver: p2, recipients: []data.Person{p3.Person}},
+			{giver: p3, recipients: []data.Person{p1.Person}},
+		}},
+		{recipients: []giverWithRecipients{
+			{giver: p1, recipients: []data.Person{p3.Person}},
+			{giver: p2, recipients: []data.Person{p1.Person}},
+			{giver: p3, recipients: []data.Person{p2.Person}},
+		}},
 	}
 
-	result2 := []participantPair{
-		participantPair{giver: p1, recipient: p3},
-		participantPair{giver: p2, recipient: p1},
-		participantPair{giver: p3, recipient: p2},
-	}
+	// 50 runs should **not** produce the same results
+	for range 50 {
+		result := Pair(participants, []data.Extra{})
 
-	stats := struct {
-		first  int
-		second int
-	}{0, 0}
-
-	// 20 runs should **not** produce the same results
-	for range 20 {
-		result := PairParticipants(participants, 5)
-		switch {
-		case reflect.DeepEqual(result, result1):
-			stats.first++
-		case reflect.DeepEqual(result, result2):
-			stats.second++
-		default:
-			t.Fatalf(`
-        PairParticipants not equal to either of the expected results!
-        Got: %v
-      `, result)
+		index := slices.IndexFunc(options, func(s option) bool { return reflect.DeepEqual(result, s.recipients) })
+		if index == -1 {
+			t.Fatalf(`Pairing not equal to either of the expected results! Got: %v`, result)
 		}
+
+		options[index].stats++
 	}
 
-	if stats.first == 0 || stats.second == 0 {
+	if slices.ContainsFunc(options, func(s option) bool { return s.stats == 0 }) {
 		t.Fatalf(`
-      One of the options didn't happen a single time during 20 runs, that's very suspicious: %v
-    `, stats)
+      One of the options didn't happen a single time during 50 runs, that's very suspicious: %v
+    `, options)
+	}
+}
+
+func TestPairWithExtrasRandom(t *testing.T) {
+	p1 := data.Participant{Person: data.Person{Salutation: "p1"}, Email: "p1"}
+	p2 := data.Participant{Person: data.Person{Salutation: "p2"}, Email: "p2"}
+	p3 := data.Participant{Person: data.Person{Salutation: "p3"}, Email: "p3"}
+
+	e4 := data.Extra{Person: data.Person{Salutation: "e4"}, ExcludedGivers: []string{"p1"}}
+	e5 := data.Extra{Person: data.Person{Salutation: "e5"}, ExcludedGivers: []string{"p2"}}
+	participants := []data.Participant{p1, p2, p3}
+	extras := []data.Extra{e4, e5}
+
+	options := []option{
+		{recipients: []giverWithRecipients{
+			{giver: p1, recipients: []data.Person{p2.Person}},
+			{giver: p2, recipients: []data.Person{p3.Person, e4.Person}},
+			{giver: p3, recipients: []data.Person{p1.Person, e5.Person}},
+		}},
+		{recipients: []giverWithRecipients{
+			{giver: p1, recipients: []data.Person{p2.Person, e5.Person}},
+			{giver: p2, recipients: []data.Person{p3.Person, e4.Person}},
+			{giver: p3, recipients: []data.Person{p1.Person}},
+		}},
+		{recipients: []giverWithRecipients{
+			{giver: p1, recipients: []data.Person{p2.Person, e5.Person}},
+			{giver: p2, recipients: []data.Person{p3.Person}},
+			{giver: p3, recipients: []data.Person{p1.Person, e4.Person}},
+		}},
+		{recipients: []giverWithRecipients{
+			{giver: p1, recipients: []data.Person{p3.Person}},
+			{giver: p2, recipients: []data.Person{p1.Person, e4.Person}},
+			{giver: p3, recipients: []data.Person{p2.Person, e5.Person}},
+		}},
+		{recipients: []giverWithRecipients{
+			{giver: p1, recipients: []data.Person{p3.Person, e5.Person}},
+			{giver: p2, recipients: []data.Person{p1.Person, e4.Person}},
+			{giver: p3, recipients: []data.Person{p2.Person}},
+		}},
+		{recipients: []giverWithRecipients{
+			{giver: p1, recipients: []data.Person{p3.Person, e5.Person}},
+			{giver: p2, recipients: []data.Person{p1.Person}},
+			{giver: p3, recipients: []data.Person{p2.Person, e4.Person}},
+		}},
+	}
+
+	// 50 runs should **not** produce the same results
+	for range 50 {
+		result := Pair(participants, extras)
+
+		index := slices.IndexFunc(options, func(s option) bool { return reflect.DeepEqual(result, s.recipients) })
+		if index == -1 {
+			t.Fatalf(`Pairing not equal to either of the expected results! Got: %v`, result)
+		}
+
+		options[index].stats++
+	}
+
+	if slices.ContainsFunc(options, func(s option) bool { return s.stats == 0 }) {
+		t.Fatalf(`
+      One of the options didn't happen a single time during 50 runs, that's very suspicious: %v
+    `, options)
 	}
 }
