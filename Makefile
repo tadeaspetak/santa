@@ -12,8 +12,8 @@ run:
 
 test:
 	go test ./...
-	rm santa-batch-*
-	rm internal/app/santa-batch-*
+	rm -f santa-batch-*
+	rm -f internal/app/santa-batch-*
 
 vet:
 	go vet ./...

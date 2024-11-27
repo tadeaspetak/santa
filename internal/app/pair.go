@@ -69,7 +69,7 @@ func pairParticipants(participants []data.Participant, maxAttemptCount int) []gi
 }
 
 func Pair(participants []data.Participant, extraRecipients []data.Extra) []giverWithRecipients {
-	paired := pairParticipants(participants, 5)
+	paired := pairParticipants(participants, 10)
 
 	if len(extraRecipients) > 0 {
 		extras := pairExtras(extraRecipients, participants)
