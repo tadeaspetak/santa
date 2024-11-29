@@ -139,7 +139,7 @@ If you'd like to generate a printable PDF when sending a batch, use the `-p` fla
 1. The first and the last pages are empty so that if you open / print this file, you won't see anything by mistake.
 2. All other pages have the gift-giver (=email recipient) at the top half of the page and the message (subject + body) at the bottom half. That way, you can always e.g. fold the pages in such a way that you won't see anything.
 
-If you're only interested in generating such a PDF, run `send  -p -d` (more details on the `-d` flag below).
+See the [printed PDF for the example data](https://github.com/tadeaspetak/santa/blob/main/data.example.pdf). If you're only interested in generating such a PDF, run `send  -p -d` (more details on the `-d` flag below).
 
 ### Debugging & testing
 
