@@ -1,10 +1,10 @@
 # Secret Santa 🎅
 
-Santa is a simple CLI app that makes drawing your Secret Santa pairings a breeze.
+Santa is a simple CLI app written in Go that makes drawing your Secret Santa pairings a breeze.
 
 > 💡 Secret Santa is a gift-exchange tradition where participants anonymously give gifts to a randomly assigned person. I have come to love this way of Christmas due to its promoting quality instead of quantity.
 
-The app enables you to define your participants and the email(s) they will be receiving. Once done, the `send` command randomises the gift-givers and recipients taking all preferences into account. Finally, it fires off the emails.
+The app enables you to define your participants and the email(s) they will be receiving. Preferences include excluded or predestined recipients, and extra recipients with potentially excluded givers. Santa makes it simple to debug and even print the pairings before randomising the gift-givers and recipients (taking everything into account) and firing off your stealthy emails using your Mailgun account.
 
 1. Start by [setting up the app](#lets-get-you-going-).
 1. Once set up, [test and send your stealthy emails](#sending).
