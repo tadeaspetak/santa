@@ -14,9 +14,10 @@ import (
 
 // Data is the representation of the data for the app.
 type Data struct {
-	Template     Template      `json:"template"`
-	Mailgun      Mailgun       `json:"mailgun"`
-	Participants []Participant `json:"participants,omitempty"    validate:"min=2,dive"`
+	Template     Template      `json:"template,omitempty"        validate:"required"`
+	Mailgun      Mailgun       `json:"mailgun,omitempty"         validate:"required_without=Smtp,omitempty"`
+	Smtp         Smtp          `json:"smtp,omitempty"            validate:"required_without=Mailgun,omitempty"`
+	Participants []Participant `json:"participants,omitempty"    validate:"required,min=2,dive"`
 	Extras       []Extra       `json:"extraRecipients,omitempty" validate:"dive"`
 }
 
@@ -32,6 +33,12 @@ type Template struct {
 type Mailgun struct {
 	Domain string `json:"domain,omitempty" validate:"required"`
 	APIKey string `json:"apiKey,omitempty" validate:"required"`
+}
+
+type Smtp struct {
+	Host string `json:"host,omitempty" validate:"required"`
+	User string `json:"user,omitempty" validate:"required"`
+	Pass string `json:"pass,omitempty" validate:"required"`
 }
 
 type Person struct {

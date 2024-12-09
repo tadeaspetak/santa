@@ -70,8 +70,12 @@ type SendOpts struct {
 	ShouldPrintPdf bool
 }
 
+type Mailer interface {
+	Send(sender, subject, body, recipient, replyTo string) error
+}
+
 func Send(
-	mlr mailer,
+	mlr Mailer,
 	pairs []giverWithRecipients,
 	template data.Template,
 	opts SendOpts,
@@ -126,12 +130,12 @@ func Send(
 			continue
 		}
 
-		err = mlr.send(
+		err = mlr.Send(
 			template.Sender,
 			subject,
 			body,
 			recipient,
-			pair.giver.Email, // even when a fixed recipient is present, set the reply-to to the actual giver's email to make debugging easy
+			pair.giver.Email, // even when a fixed email recipient is present, set the reply-to to the actual giver's email to make debugging easy
 		)
 
 		if err != nil {

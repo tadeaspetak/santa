@@ -30,6 +30,8 @@ build: lint
 
 clean:
 	rm -rf ./bin
+	rm -f santa-batch-*
+	rm -f internal/app/santa-batch-*
 
 tools:
 	go install honnef.co/go/tools/cmd/staticcheck@latest

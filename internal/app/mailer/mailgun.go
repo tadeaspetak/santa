@@ -1,4 +1,4 @@
-package app
+package mailer
 
 import (
 	"context"
@@ -7,10 +7,6 @@ import (
 
 	"github.com/mailgun/mailgun-go/v4"
 )
-
-type mailer interface {
-	send(sender, subject, body, recipient, replyTo string) error
-}
 
 type mailgunMailer struct {
 	gun *mailgun.MailgunImpl
@@ -22,7 +18,7 @@ func NewMailgunMailer(domain string, apiKey string) mailgunMailer {
 	return mailgunMailer{gun: gun}
 }
 
-func (m mailgunMailer) send(sender, subject, body, recipient, replyTo string) error {
+func (m mailgunMailer) Send(sender, subject, body, recipient, replyTo string) error {
 	message := m.gun.NewMessage(sender, subject, "", recipient)
 	message.SetReplyTo(replyTo)
 	message.SetHtml(body)

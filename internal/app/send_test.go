@@ -19,7 +19,7 @@ type mockMailer struct {
 	mails []mail
 }
 
-func (m *mockMailer) send(sender, subject, body, recipient, replyTo string) error {
+func (m *mockMailer) Send(sender, subject, body, recipient, replyTo string) error {
 	m.mails = append(
 		m.mails,
 		mail{
