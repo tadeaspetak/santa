@@ -1,82 +1,66 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"log"
+	"os"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/tadeaspetak/santa/cmd/cmdData"
-	"github.com/tadeaspetak/santa/cmd/participants"
 	"github.com/tadeaspetak/santa/internal/data"
 )
-
-func ask(question string) bool {
-	prompt := promptui.Prompt{
-		Label:     fmt.Sprint(question),
-		IsConfirm: true,
-		Default:   "y",
-	}
-	_, err := prompt.Run()
-	if err != nil {
-		if errors.Is(err, promptui.ErrAbort) {
-			return false
-		}
-
-		log.Fatalf("Prompt failed %v\n", err)
-	}
-
-	return true
-
-}
 
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "initialize your settings",
 	Run: func(cmd *cobra.Command, args []string) {
-		dat := (&cmdData.CmdData{}).Load(cmd)
-
-		hasMailgun := dat.Mailgun != data.Mailgun{}
-		hasTemplate := dat.Template != data.Template{}
-		hasParticipants := len(dat.Participants) != 0
-
-		if hasMailgun && hasTemplate && hasParticipants {
-			fmt.Print("\nYou seem to be fully set up, use individual commands to edit the settings.")
-			return
-		}
-
-		fmt.Print(`\n\n`)
-
-		shouldContinue := ask("Let's get you going in no time ⏳ Are you ready?")
-		if !shouldContinue {
-			fmt.Print("Doing nothing then.\n")
-			return
-		}
-
-		if !hasMailgun {
-			mailgunCmd.Run(cmd, args)
-		} else {
-			fmt.Print("\nYour Mailgun config is already present.")
-		}
-		fmt.Print("\n(You can always edit your mailgun settings using the `mailgun` command.)\n\n")
-
-		if !hasTemplate {
-			templateCmd.Run(cmd, args)
-		} else {
-			fmt.Print("\nYour email template is already configured, let's move on to participants.")
-		}
-		fmt.Print("\n(You can always edit your template settings using the `template` command.)\n\n")
-
-		if !hasParticipants {
-			fmt.Print(
-				"\nAdd your participants. Once ready, cmd/ctrl+c out of this and further edit them using the `participants edit` command.\n",
+		dataPath := getDataPath(cmd)
+		if _, err := os.Stat(dataPath); err == nil {
+			log.Fatalf(
+				"File '%s' already exists. If you'd like to start fresh, rename or remove this file first.",
+				dataPath,
 			)
-
-			for {
-				participants.AddCmd.Run(cmd, args)
-				fmt.Println()
-			}
 		}
+
+		dat := data.Data{
+			Schema: "https://raw.githubusercontent.com/tadeaspetak/santa/refs/heads/main/schema.json",
+			Smtp: &data.Smtp{
+				Host: "smtp.gmail.com",
+				Pass: "xxx yyyy zzz",
+				User: "your.email@gmail.com",
+			},
+			Template: &data.Template{
+				Subject:             "🎄 Find a gift for %{recipientSalutation}",
+				Body:                "<p>Hi</p><p>Come up with something lovely for %{recipientSalutation}.</p><p>Happy hunting,<br/>Your Santa 🎅</p>",
+				Sender:              "your.email+santa@gmail.com",
+				RecipientsSeparator: " and ",
+			},
+			Participants: []data.Participant{
+				{
+					Email:              "mom@family.com",
+					Person:             data.Person{Salutation: "Mom"},
+					ExcludedRecipients: []string{"dad@family.com"},
+				}, {
+					Email:              "dad@family.com",
+					Person:             data.Person{Salutation: "Dad"},
+					ExcludedRecipients: []string{"mom@family.com"},
+				}, {
+					Email:  "auntie@family.com",
+					Person: data.Person{Salutation: "Auntie"},
+				}, {
+					Email:                "emily@family.com",
+					Person:               data.Person{Salutation: "Emily"},
+					PredestinedRecipient: "auntie@family.com",
+				}, {
+					Email:  "jake@family.com",
+					Person: data.Person{Salutation: "Jake"},
+				}},
+		}
+
+		err := data.SaveData(getDataPath(cmd), dat)
+		if err != nil {
+			log.Fatalf("could not create a data file: %v", err)
+		}
+
+		fmt.Println("Your initial data file has been created 🎉")
 	},
 }

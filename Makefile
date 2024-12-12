@@ -1,5 +1,5 @@
 APP_NAME := santa
-VERSION := v0.0.4
+VERSION := v0.2.0
 # note: get the variable name using go tool nm <your binary> | grep <your variable>
 VERSION_LDFLAG = -ldflags "-X github.com/tadeaspetak/santa/cmd/version.Version=$(VERSION)"
 

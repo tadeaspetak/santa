@@ -20,16 +20,26 @@
       },
       "required": ["domain", "apiKey"]
     },
+    "extraRecipients": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/extra" }
+    },
     "participants": {
       "type": "array",
       "items": { "$ref": "#/$defs/participant" },
       "minLength": 2
     },
-    "extraRecipients": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/extra" }
+    "template": {
+      "type": "object",
+      "properties": {
+        "subject": { "type": "string" },
+        "body": { "type": "string" },
+        "sender": { "type": "string" },
+        "recipientsSeparator": { "type": "string" }
+      },
+      "required": ["subject", "body", "sender"]
     },
-    "required": ["participants"]
+    "required": ["participants", "template"]
   },
   "$defs": {
     "participant": {

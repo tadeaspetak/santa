@@ -2,12 +2,23 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/tadeaspetak/santa/cmd/cmdData"
-	"github.com/tadeaspetak/santa/cmd/participants"
 )
+
+var dataPathFlagName = "data"
+
+func getDataPath(cmd *cobra.Command) string {
+	dataPath, err := cmd.Flags().GetString(dataPathFlagName)
+
+	if err != nil {
+		log.Fatalf("Could not get data-file path %v\n", err)
+	}
+
+	return dataPath
+}
 
 var RootCmd = &cobra.Command{
 	Short: "generate your secret santa pairings easily",
@@ -27,11 +38,8 @@ func init() {
 	// disable the default completion command
 	RootCmd.CompletionOptions.DisableDefaultCmd = true
 
-	RootCmd.PersistentFlags().String(cmdData.DataPathFlagName, "data.json", "data file path")
+	RootCmd.PersistentFlags().String(dataPathFlagName, "data.json", "data file path")
 
-	RootCmd.AddCommand(participants.ParticipantsCmd)
-	RootCmd.AddCommand(mailgunCmd)
-	RootCmd.AddCommand(templateCmd)
 	RootCmd.AddCommand(sendCmd)
 	RootCmd.AddCommand(versionCmd)
 	RootCmd.AddCommand(initCmd)

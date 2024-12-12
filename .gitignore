@@ -3,4 +3,5 @@ bin/
 
 *.json
 !data.example.json
+!schema.json
 santa-batch-*

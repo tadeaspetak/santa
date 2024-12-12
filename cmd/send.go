@@ -1,19 +1,22 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/tadeaspetak/santa/cmd/cmdData"
 	"github.com/tadeaspetak/santa/internal/app"
 	"github.com/tadeaspetak/santa/internal/app/mailer"
 	"github.com/tadeaspetak/santa/internal/data"
-	"github.com/tadeaspetak/santa/internal/validation"
 )
+
+var Validate *validator.Validate
 
 var isDebugFlagName = "debug"
 var alwaysSendToFlagName = "alwaysSendTo"
@@ -25,14 +28,15 @@ var translations map[string]string = map[string]string{
 }
 
 func validate(dat data.Data) error {
-	// validation
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	err := validate.Struct(dat)
+
 	removeData := regexp.MustCompile(`data.(.*)`)
 	removeArray := regexp.MustCompile(`(participant|extra)s\[\d+\](.*)`)
-	err := validation.Validate.Struct(dat)
 	if err != nil {
 		errs := []string{}
 		for _, err := range err.(validator.ValidationErrors) {
-			// e.g. `cmddata.data.participants[1].email`, or `cmddata.data.template.subject`
+			// e.g. `data.participants[1].email`, or `data.template.subject`
 			namespace := err.StructNamespace()
 
 			simplifiedNamespace :=
@@ -64,11 +68,35 @@ func validate(dat data.Data) error {
 	return nil
 }
 
+func ask(question string) bool {
+	prompt := promptui.Prompt{
+		Label:     fmt.Sprint(question),
+		IsConfirm: true,
+		Default:   "y",
+	}
+	_, err := prompt.Run()
+	if err != nil {
+		if errors.Is(err, promptui.ErrAbort) {
+			return false
+		}
+
+		log.Fatalf("Prompt failed %v\n", err)
+	}
+
+	return true
+}
+
 var sendCmd = &cobra.Command{
 	Use:   "send",
 	Short: "send the email",
 	Run: func(cmd *cobra.Command, args []string) {
-		dat := (&cmdData.CmdData{}).Load(cmd)
+		dat, err := data.LoadData(getDataPath(cmd))
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				log.Fatalf("Data file does not exist.")
+			}
+			log.Fatalf("Error loading config: %v", err)
+		}
 
 		// flags
 		isDebug, err := cmd.Flags().GetBool(isDebugFlagName)
@@ -87,23 +115,28 @@ var sendCmd = &cobra.Command{
 		}
 
 		// validate
-		if err = validate(dat.Data); err != nil {
+		if err = validate(dat); err != nil {
 			log.Fatalf("Invalid data!\n\n%s\n\n", err)
 		}
 
 		// mailer
 		var mlr app.Mailer
 		// note: checking the domain is enough, the rest has been validated above
-		if dat.Mailgun.Domain != "" {
+		if dat.Mailgun != nil && dat.Mailgun.Domain != "" {
 			mlr = mailer.NewMailgunMailer(dat.Mailgun.Domain, dat.Mailgun.APIKey)
 		} else {
 			mlr = mailer.NewSmtpMailer(dat.Smtp.Host, 587, dat.Smtp.User, dat.Smtp.Pass)
 		}
 
+		if !ask("We are ready to send randomise and send the emails. Are YOU ready") {
+			fmt.Println("Not sending then.")
+			return
+		}
+
 		err = app.Send(
 			mlr,
 			app.Pair(dat.Participants, dat.Extras),
-			dat.Data.Template,
+			*dat.Template,
 			app.SendOpts{
 				AlwaysSendTo:   alwaysSendTo,
 				IsDebug:        isDebug,

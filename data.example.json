@@ -1,8 +1,5 @@
 {
-  "mailgun": {
-    "domain": "mg.johndoe.me",
-    "apiKey": "XXX"
-  },
+  "$schema": "https://raw.githubusercontent.com/tadeaspetak/santa/refs/heads/main/schema.json",
   "template": {
     "subject": "🎄 Find a gift for %{recipientSalutation}",
     "body": "<p>Hi</p><p>Come up with something lovely for %{recipientSalutation}.</p><p>Happy hunting,<br/>Your Santa 🎅</p>",
