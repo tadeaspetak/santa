@@ -1,0 +1,54 @@
+{
+  "$id": "https://github.com/tadeaspetak/santa",
+  "title": "Santa data definition",
+  "type": "object",
+  "properties": {
+    "smtp": {
+      "type": "object",
+      "properties": {
+        "host": { "type": "string", "title": "SMTP host" },
+        "user": { "type": "string" },
+        "pass": { "type": "string" }
+      },
+      "required": ["host", "user", "pass"]
+    },
+    "mailgun": {
+      "type": "object",
+      "properties": {
+        "domain": { "type": "string" },
+        "apiKey": { "type": "string" }
+      },
+      "required": ["domain", "apiKey"]
+    },
+    "participants": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/participant" },
+      "minLength": 2
+    },
+    "extraRecipients": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/extra" }
+    },
+    "required": ["participants"]
+  },
+  "$defs": {
+    "participant": {
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "salutation": { "type": "string" },
+        "excludedRecipients": { "type": "array", "items": { "type": "string" } },
+        "predestinedRecipient": { "type": "string" }
+      },
+      "required": ["email", "salutation"]
+    },
+    "extra": {
+      "type": "object",
+      "properties": {
+        "salutation": { "type": "string" },
+        "excludedGivers": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["salutation"]
+    }
+  }
+}
