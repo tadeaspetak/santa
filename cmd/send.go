@@ -128,7 +128,7 @@ var sendCmd = &cobra.Command{
 			mlr = mailer.NewSmtpMailer(dat.Smtp.Host, 587, dat.Smtp.User, dat.Smtp.Pass)
 		}
 
-		if !ask("We are ready to send randomise and send the emails. Are YOU ready") {
+		if !ask("We are ready to randomise and send the emails. Are YOU ready") {
 			fmt.Println("Not sending then.")
 			return
 		}

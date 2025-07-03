@@ -5,7 +5,10 @@ Santa is a simple app written in Go that makes drawing your Secret Santa pairing
 > 💡 Secret Santa is a gift-exchange tradition where participants anonymously give gifts to a randomly assigned person. I have come to love this way of Christmas due to its promoting quality instead of quantity.
 
 1. Using a simple JSON file, define your participants and the template for constructing emails.
-2. Suppoerted preferences include excluded or predestined recipients, and extra recipients with excluded givers.
+2. Supported preferences include
+   - excluded recipients
+   - predestined recipients
+   - extra recipients with excluded givers
 3. Debug your setup and the randomisation of your pairings.
 4. Once ready, fire off your stealthy emails using a simple SMTP config or your Mailgun account.
 
@@ -17,7 +20,7 @@ First of, download the app from [https://github.com/tadeaspetak/santa/releases/l
 
 1. Run the `init` command from your terminal, like `./santa-mac init`.
 2. This command generates a `data.json` file with basic sample config (TODO).
-3. Use your favourite editor to edit the `data.json` file. The attached JSON schema will help youwith the config.
+3. Use your favourite editor to edit the `data.json` file. The attached JSON schema will help you with the config.
 
 ### Mailer
 
@@ -65,7 +68,7 @@ This is where the `template` section enters the scene:
 
 1. In `subject` and `body`, you have the `%{recipientSalutation}` variable at your disposal. This will be replaced by the value of the `salutation` from the recipient(s).
 2. `body` is automatically wrapped in `<html><body>`.
-3. `sender` must be on the domain from the [Mailgun section](#mailgun).
+3. When using Mailgun, `sender` must be on the domain from the [Mailgun section](#mailgun).
 4. The `recipientsSeparator` separates multiple gift-recipients. This is only important in cases where [extra recipients](#extra-recipients) have been supplied.
 
 Consider the following as a reasonable starting point:
@@ -147,7 +150,7 @@ Alright, so you've set up your Mailgun, template and participants, and now you'r
 
 ### Logs
 
-Every (about to be) sent email is saved in a `santa-batch-%datetime-%giftgiver.txt` file:
+Every email about to be sent is saved in a `santa-batch-%datetime-%giftgiver.txt` file:
 
 1. If you e.g. discover a typo in someone's email, you don't have to scrape the whole batch. You'd just look at who that particular gift-giver was supposed to get as a recipient and tell them. Not perfect, but heaps better than nothing.
 2. It's excellent for debugging.
