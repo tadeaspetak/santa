@@ -11,7 +11,7 @@ import (
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "initialize your settings",
+	Short: "Create a sample data file to start from",
 	Run: func(cmd *cobra.Command, args []string) {
 		dataPath := getDataPath(cmd)
 		if _, err := os.Stat(dataPath); err == nil {
@@ -56,11 +56,12 @@ var initCmd = &cobra.Command{
 				}},
 		}
 
-		err := data.SaveData(getDataPath(cmd), dat)
+		err := data.SaveData(dataPath, dat)
 		if err != nil {
 			log.Fatalf("could not create a data file: %v", err)
 		}
 
-		fmt.Println("Your initial data file has been created 🎉")
+		fmt.Printf("Your data file '%s' has been created 🎉\n\n", dataPath)
+		fmt.Println("Next, edit it (participants, email template and mailer) and run `santa check`.")
 	},
 }

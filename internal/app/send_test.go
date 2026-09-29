@@ -1,7 +1,10 @@
 package app
 
 import (
+	"bytes"
+	"context"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -36,26 +39,16 @@ func (m *mockMailer) Send(sender, subject, body, recipient, replyTo string) erro
 	return nil
 }
 
-// inTempDir runs the test in a temporary working directory so that the batch files
-// and PDFs `Send` generates don't pollute the repo. Returns the directory.
-func inTempDir(t *testing.T) string {
+func (m *mockMailer) Verify(_ context.Context) error {
+	return nil
+}
+
+// testOpts returns options writing into a temporary directory and discarding the output.
+func testOpts(t *testing.T, opts SendOpts) SendOpts {
 	t.Helper()
-
-	dir := t.TempDir()
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Chdir(dir); err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if err := os.Chdir(wd); err != nil {
-			t.Fatal(err)
-		}
-	})
-
-	return dir
+	opts.OutputDir = filepath.Join(t.TempDir(), "batch")
+	opts.Out = io.Discard
+	return opts
 }
 
 var (
@@ -110,7 +103,7 @@ func TestSend(t *testing.T) {
 		{
 			name:     "always send to",
 			template: testTemplate,
-			opts:     SendOpts{AlwaysSendTo: "me"},
+			opts:     SendOpts{To: "me"},
 			// the reply-to still points to the actual giver
 			expected: []mail{
 				{"sender", "sub p2, e4", "<html><body>bod p2, e4</body></html>", "me", "p1"},
@@ -121,17 +114,15 @@ func TestSend(t *testing.T) {
 		{
 			name:     "debug sends nothing",
 			template: testTemplate,
-			opts:     SendOpts{IsDebug: true},
+			opts:     SendOpts{IsDryRun: true},
 			expected: nil,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			inTempDir(t)
-
 			mailer := mockMailer{}
-			if err := Send(&mailer, testPairs, tt.template, tt.opts); err != nil {
+			if err := Send(&mailer, testPairs, tt.template, testOpts(t, tt.opts)); err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
@@ -143,61 +134,48 @@ func TestSend(t *testing.T) {
 }
 
 func TestSendWritesBatchFiles(t *testing.T) {
-	for _, isDebug := range []bool{false, true} {
-		t.Run(map[bool]string{false: "sending", true: "debug"}[isDebug], func(t *testing.T) {
-			dir := inTempDir(t)
+	for _, isDryRun := range []bool{false, true} {
+		t.Run(map[bool]string{false: "sending", true: "dry run"}[isDryRun], func(t *testing.T) {
+			opts := testOpts(t, SendOpts{IsDryRun: isDryRun})
 
-			if err := Send(&mockMailer{}, testPairs, testTemplate, SendOpts{IsDebug: isDebug}); err != nil {
+			if err := Send(&mockMailer{}, testPairs, testTemplate, opts); err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			for _, pair := range testPairs {
-				matches, err := filepath.Glob(filepath.Join(dir, "santa-batch-*-"+pair.giver.Email+".txt"))
-				if err != nil {
-					t.Fatal(err)
-				}
-				if len(matches) != 1 {
-					t.Fatalf("expected a single batch file for %s, got %v", pair.giver.Email, matches)
-				}
+			entries, err := os.ReadDir(opts.OutputDir)
+			if err != nil {
+				t.Fatalf("expected the output directory to be created: %v", err)
+			}
+			if len(entries) != len(testPairs) {
+				t.Fatalf("expected %d files (and no PDF), got %v", len(testPairs), entries)
+			}
 
-				content, err := os.ReadFile(matches[0])
+			for _, pair := range testPairs {
+				content, err := os.ReadFile(filepath.Join(opts.OutputDir, pair.giver.Email+".txt"))
 				if err != nil {
-					t.Fatal(err)
+					t.Fatalf("expected a batch file for %s: %v", pair.giver.Email, err)
 				}
 				if !strings.HasPrefix(string(content), "Sent to: "+pair.giver.Email+"\n") {
 					t.Fatalf("unexpected batch file content for %s: %s", pair.giver.Email, content)
 				}
-			}
-
-			if pdfs, _ := filepath.Glob(filepath.Join(dir, "*.pdf")); len(pdfs) != 0 {
-				t.Fatalf("no PDF expected without the print flag, got %v", pdfs)
 			}
 		})
 	}
 }
 
 func TestSendPrintsPdf(t *testing.T) {
-	dir := inTempDir(t)
-
 	template := testTemplate
 	// symbols such as emojis break fpdf, make sure they're handled
 	template.Subject = "🎄 " + template.Subject
 
-	if err := Send(&mockMailer{}, testPairs, template, SendOpts{IsDebug: true, ShouldPrintPdf: true}); err != nil {
+	opts := testOpts(t, SendOpts{IsDryRun: true, ShouldPrintPdf: true})
+	if err := Send(&mockMailer{}, testPairs, template, opts); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	pdfs, err := filepath.Glob(filepath.Join(dir, "santa-batch-*.pdf"))
+	content, err := os.ReadFile(filepath.Join(opts.OutputDir, "emails.pdf"))
 	if err != nil {
-		t.Fatal(err)
-	}
-	if len(pdfs) != 1 {
-		t.Fatalf("expected a single PDF, got %v", pdfs)
-	}
-
-	content, err := os.ReadFile(pdfs[0])
-	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("expected a PDF: %v", err)
 	}
 	if !strings.HasPrefix(string(content), "%PDF") {
 		t.Fatalf("the generated file is not a PDF")
@@ -205,17 +183,66 @@ func TestSendPrintsPdf(t *testing.T) {
 }
 
 func TestSendStopsOnMailerError(t *testing.T) {
-	inTempDir(t)
-
 	mailer := mockMailer{failFor: "p2"}
-	err := Send(&mailer, testPairs, testTemplate, SendOpts{})
+	err := Send(&mailer, testPairs, testTemplate, testOpts(t, SendOpts{}))
 	if !errors.Is(err, errMockSend) {
 		t.Fatalf("expected the mailer error, got %v", err)
+	}
+	if !strings.Contains(err.Error(), "1 of 3 sent") {
+		t.Fatalf("expected the error to say how many emails went out, got %v", err)
 	}
 
 	// the first email went out, the failing one and everything after it didn't
 	if len(mailer.mails) != 1 || mailer.mails[0].recipient != "p1" {
 		t.Fatalf("expected only the email to p1 to be sent, got %v", mailer.mails)
+	}
+}
+
+func TestSendOutput(t *testing.T) {
+	tests := []struct {
+		name     string
+		opts     SendOpts
+		expected string
+	}{
+		{
+			name:     "sending",
+			expected: "  ✓ p1\n  ✓ p2\n  ✓ p3\n",
+		},
+		{
+			name:     "to",
+			opts:     SendOpts{To: "me"},
+			expected: "  ✓ me (instead of p1)\n  ✓ me (instead of p2)\n  ✓ me (instead of p3)\n",
+		},
+		{
+			name:     "dry run",
+			opts:     SendOpts{IsDryRun: true},
+			expected: "  - p1 (not sent, dry run)\n  - p2 (not sent, dry run)\n  - p3 (not sent, dry run)\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var out bytes.Buffer
+			opts := testOpts(t, tt.opts)
+			opts.Out = &out
+
+			if err := Send(&mockMailer{}, testPairs, testTemplate, opts); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if out.String() != tt.expected {
+				t.Fatalf("\nexpected:\n%s\ngot:\n%s", tt.expected, out.String())
+			}
+		})
+	}
+}
+
+func TestRender(t *testing.T) {
+	subject, body := Render(testTemplate, []data.Person{{Salutation: "Rudolph"}, {Salutation: "Blitzen"}})
+	if subject != "sub Rudolph, Blitzen" {
+		t.Errorf("unexpected subject: %s", subject)
+	}
+	if body != "<html><body>bod Rudolph, Blitzen</body></html>" {
+		t.Errorf("unexpected body: %s", body)
 	}
 }
 

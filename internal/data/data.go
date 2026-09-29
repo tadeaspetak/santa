@@ -35,6 +35,8 @@ type Mailgun struct {
 // Smtp contains the required config for sending via SMTP.
 type Smtp struct {
 	Host string `json:"host,omitempty" validate:"required"`
+	// Port defaults to 587 (submission with STARTTLS).
+	Port int    `json:"port,omitempty" validate:"omitempty,min=1,max=65535"`
 	User string `json:"user,omitempty" validate:"required"`
 	Pass string `json:"pass,omitempty" validate:"required"`
 }

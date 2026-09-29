@@ -1,10 +1,12 @@
 package app
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"strings"
-	"time"
 	"unicode"
 
 	"github.com/go-pdf/fpdf"
@@ -40,7 +42,7 @@ func addPDFPage(pdf *fpdf.Fpdf, emailRecipient, subject, body string) {
 	availablePageHeight := 270
 
 	cleanSubject := removeSymbols(subject)
-	cleanBody := removeSymbols(html2text.HTML2Text(body))
+	cleanBody := removeSymbols(HTMLToText(body))
 	message := fmt.Sprintf("%s\n\n%s", cleanSubject, cleanBody)
 	pdf.SetFont("Arial", "", 12)
 	lines := pdf.SplitText(message, 190)
@@ -63,14 +65,43 @@ func addPDFPage(pdf *fpdf.Fpdf, emailRecipient, subject, body string) {
 	pdf.MultiCell(0, float64(multiLineHeight), message, "", "L", false)
 }
 
-type SendOpts struct {
-	AlwaysSendTo   string
-	IsDebug        bool
-	ShouldPrintPdf bool
-}
-
+// Mailer sends emails, see the `mailer` package for the implementations.
 type Mailer interface {
 	Send(sender, subject, body, recipient, replyTo string) error
+	// Verify checks that the mailer can log in without sending anything.
+	Verify(ctx context.Context) error
+}
+
+type SendOpts struct {
+	// To, when set, receives all the emails instead of the participants (for testing purposes).
+	To string
+	// IsDryRun generates everything as usual but doesn't send any emails.
+	IsDryRun bool
+	// ShouldPrintPdf generates a printable PDF with all the emails.
+	ShouldPrintPdf bool
+	// OutputDir is where the batch files (and the PDF) are written. Created if it doesn't exist.
+	OutputDir string
+	// Out receives the progress messages. Defaults to stdout.
+	Out io.Writer
+}
+
+// Render builds the subject and the HTML body of an email for the given recipients.
+func Render(template data.Template, recipients []data.Person) (subject string, body string) {
+	separator := template.RecipientsSeparator
+	if separator == "" {
+		separator = " and "
+	}
+	salutations := mapOver(recipients, func(v data.Person) string { return v.Salutation })
+	replacer := strings.NewReplacer("%{recipientSalutation}", strings.Join(salutations, separator))
+
+	subject = replacer.Replace(template.Subject)
+	body = replacer.Replace(fmt.Sprintf(`<html><body>%s</body></html>`, template.Body))
+	return subject, body
+}
+
+// HTMLToText converts an email body to plain text, e.g. for printing it in the terminal.
+func HTMLToText(html string) string {
+	return html2text.HTML2Text(html)
 }
 
 func Send(
@@ -79,7 +110,14 @@ func Send(
 	template data.Template,
 	opts SendOpts,
 ) error {
-	batchDate := time.Now().Local().Format("20060102-150405")
+	out := opts.Out
+	if out == nil {
+		out = os.Stdout
+	}
+
+	if err := os.MkdirAll(opts.OutputDir, 0755); err != nil {
+		return fmt.Errorf("unable to create the output directory: %w", err)
+	}
 
 	var pdf *fpdf.Fpdf
 	if opts.ShouldPrintPdf {
@@ -92,40 +130,32 @@ func Send(
 		pdf.AddPage()
 	}
 
-	for _, pair := range pairs {
-		// prefer the email provided via the `alwaysSendTo` flag for testing purposes
-		recipient := opts.AlwaysSendTo
+	for i, pair := range pairs {
+		// prefer the email provided via the `To` option for testing purposes
+		recipient := opts.To
 		if recipient == "" {
 			recipient = pair.giver.Email
 		}
 
-		separator := template.RecipientsSeparator
-		if separator == "" {
-			separator = " and "
-		}
-		salutations := mapOver(pair.recipients, func(v data.Person) string { return v.Salutation })
-		replacer := strings.NewReplacer("%{recipientSalutation}", strings.Join(salutations, separator))
+		subject, body := Render(template, pair.recipients)
 
-		subject := replacer.Replace(template.Subject)
-		body := replacer.Replace(fmt.Sprintf(`<html><body>%s</body></html>`, template.Body))
-
-		// write a history batch file
+		// write a batch file per giver, useful for debugging and fixing typos in emails
 		err := os.WriteFile(
-			fmt.Sprintf("santa-batch-%s-%s.txt", batchDate, pair.giver.Email),
+			filepath.Join(opts.OutputDir, pair.giver.Email+".txt"),
 			[]byte(fmt.Sprintf("Sent to: %s\nSubject: %s\nBody: %s", pair.giver.Email, subject, body)),
 			0644,
 		)
 		if err != nil {
-			return fmt.Errorf("unable to write a history batch file %v", err)
+			return fmt.Errorf("unable to write a batch file: %w", err)
 		}
 
 		if opts.ShouldPrintPdf {
 			addPDFPage(pdf, pair.giver.Email, subject, body)
 		}
 
-		// don't send anything when debugging
-		if opts.IsDebug {
-			fmt.Printf("DEBUG: Would be sending an email to %s (batch file generated).\n", recipient)
+		// don't send anything on dry runs
+		if opts.IsDryRun {
+			fmt.Fprintf(out, "  - %s (not sent, dry run)\n", pair.giver.Email)
 			continue
 		}
 
@@ -140,16 +170,19 @@ func Send(
 		if err != nil {
 			// Note: It's questionable what the best course of action is here. Is it better to continue
 			// with the current batch or return an error even though some emails may already have been sent out?
-			return fmt.Errorf("could not send email to %v: %w", recipient, err)
+			return fmt.Errorf("could not send email to %v (%d of %d sent before this one): %w", recipient, i, len(pairs), err)
 		}
 
-		fmt.Printf("Email to %s sent successfully\n", recipient)
-
+		if recipient == pair.giver.Email {
+			fmt.Fprintf(out, "  ✓ %s\n", recipient)
+		} else {
+			fmt.Fprintf(out, "  ✓ %s (instead of %s)\n", recipient, pair.giver.Email)
+		}
 	}
 
 	if opts.ShouldPrintPdf {
 		pdf.AddPage()
-		err := pdf.OutputFileAndClose(fmt.Sprintf("santa-batch-%s.pdf", batchDate))
+		err := pdf.OutputFileAndClose(filepath.Join(opts.OutputDir, "emails.pdf"))
 		if err != nil {
 			return fmt.Errorf("could not generate PDF: %v", err)
 		}

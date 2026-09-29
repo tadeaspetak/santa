@@ -2,7 +2,6 @@ package mailer
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/mailgun/mailgun-go/v4"
@@ -26,13 +25,15 @@ func (m mailgunMailer) Send(sender, subject, body, recipient, replyTo string) er
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	resp, id, err := m.gun.Send(ctx, message)
+	_, _, err := m.gun.Send(ctx, message)
+	return err
+}
 
-	if err != nil {
-		return err
-	}
+// Verify checks the API key and the sending domain without sending anything.
+func (m mailgunMailer) Verify(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
 
-	fmt.Printf("ID: %s, email: %s, Resp: %s\n", id, recipient, resp)
-	return nil
-
+	_, err := m.gun.GetDomain(ctx, m.gun.Domain())
+	return err
 }

@@ -1,76 +1,28 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"os"
-	"regexp"
-	"strings"
+	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/tadeaspetak/santa/internal/app"
-	"github.com/tadeaspetak/santa/internal/app/mailer"
-	"github.com/tadeaspetak/santa/internal/data"
 )
 
-var isDebugFlagName = "debug"
-var alwaysSendToFlagName = "alwaysSendTo"
-var shouldPrintPdfFlagName = "printPdf"
+var dryRunFlagName = "dry-run"
+var toFlagName = "to"
+var pdfFlagName = "pdf"
+var yesFlagName = "yes"
 
-var translations map[string]string = map[string]string{
-	"smtp-required_without":    "`smtp` or `mailgun` are required.",
-	"mailgun-required_without": "`mailgun` or `smtp` are required.",
-}
-
-func validate(dat data.Data) error {
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	err := validate.Struct(dat)
-
-	removeData := regexp.MustCompile(`data.(.*)`)
-	removeArray := regexp.MustCompile(`(participant|extra)s\[\d+\](.*)`)
-	if err != nil {
-		errs := []string{}
-		for _, err := range err.(validator.ValidationErrors) {
-			// e.g. `data.participants[1].email`, or `data.template.subject`
-			namespace := err.StructNamespace()
-
-			simplifiedNamespace :=
-				// change the array syntax (`participants[1].email`) to a simpler one (`participant.email`)
-				removeArray.ReplaceAllString(
-					// remove the initial `data.`
-					removeData.ReplaceAllString(
-						// lowercase
-						strings.ToLower(namespace),
-						"$1"),
-					"$1$2",
-				)
-
-			// e.g. `required_without` or
-			tag := strings.ToLower(err.ActualTag())
-			// compose the key so it ends up being e.g. `participant.email-required_without`
-			key := fmt.Sprintf("%s-%s", simplifiedNamespace, tag)
-
-			if v, ok := translations[key]; ok {
-				errs = append(errs, fmt.Sprintf("%s: %s", namespace, v))
-			} else {
-				errs = append(errs, err.Error())
-			}
-		}
-
-		return fmt.Errorf("%s", strings.Join(errs, "\n"))
-	}
-
-	return nil
-}
-
-func ask(question string) bool {
+// confirm asks a yes/no question, defaulting to no.
+func confirm(question string) bool {
 	prompt := promptui.Prompt{
-		Label:     fmt.Sprint(question),
+		Label:     question,
 		IsConfirm: true,
-		Default:   "y",
 	}
 	_, err := prompt.Run()
 	if err != nil {
@@ -84,81 +36,109 @@ func ask(question string) bool {
 	return true
 }
 
+// newOutputDir returns a name for a new output directory, making sure it doesn't exist yet
+// so that runs within the same second don't mix their files.
+func newOutputDir(now time.Time) string {
+	base := fmt.Sprintf("santa-batch-%s", now.Local().Format("20060102-150405"))
+	dir := base
+	for i := 2; ; i++ {
+		if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
+			return dir
+		}
+		dir = fmt.Sprintf("%s-%d", base, i)
+	}
+}
+
 var sendCmd = &cobra.Command{
 	Use:   "send",
-	Short: "send the email",
+	Short: "Draw the pairings and email every participant",
+	Long: `Draw the pairings and email every participant who they're giving a gift to.
+
+Every run creates a santa-batch-<datetime> folder with a copy of each email, named after
+the participant it's for (plus emails.pdf with --pdf). Opening those reveals the pairings!`,
+	Example: `  santa send --dry-run          # nothing is sent, check the output folder
+  santa send --dry-run --pdf    # ...and generate a printable PDF
+  santa send --to you@x.com     # send all the emails to yourself
+  santa send                    # send the emails to the participants`,
 	Run: func(cmd *cobra.Command, args []string) {
-		dat, err := data.LoadData(getDataPath(cmd))
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				log.Fatalf("Data file does not exist.")
+		isDryRun := getFlag(cmd, dryRunFlagName, cmd.Flags().GetBool)
+		to := getFlag(cmd, toFlagName, cmd.Flags().GetString)
+		shouldPrintPdf := getFlag(cmd, pdfFlagName, cmd.Flags().GetBool)
+		yes := getFlag(cmd, yesFlagName, cmd.Flags().GetBool)
+
+		if to != "" {
+			if err := validateEmail(to); err != nil {
+				log.Fatalf("'%s' is not a valid email address.", to)
 			}
-			log.Fatalf("Error loading config: %v", err)
 		}
 
-		// flags
-		isDebug, err := cmd.Flags().GetBool(isDebugFlagName)
-		if err != nil {
-			log.Fatalf("Unable to get the %s flag: %v", isDebugFlagName, err)
+		dat := loadData(cmd)
+		if err := validate(dat, !isDryRun); err != nil {
+			log.Fatalf("Invalid data!\n\n%s\n\nRun `santa check` for more details.", err)
 		}
 
-		alwaysSendTo, err := cmd.Flags().GetString(alwaysSendToFlagName)
-		if err != nil {
-			log.Fatalf("Unable to get the %s flag: %v", alwaysSendToFlagName, err)
-		}
-
-		shouldPrintPdf, err := cmd.Flags().GetBool(shouldPrintPdfFlagName)
-		if err != nil {
-			log.Fatalf("Unable to get the %s flag: %v", shouldPrintPdfFlagName, err)
-		}
-
-		// validate
-		if err = validate(dat); err != nil {
-			log.Fatalf("Invalid data!\n\n%s\n\n", err)
-		}
-
-		// mailer
-		var mlr app.Mailer
-		// note: checking the domain is enough, the rest has been validated above
-		if dat.Mailgun != nil && dat.Mailgun.Domain != "" {
-			mlr = mailer.NewMailgunMailer(dat.Mailgun.Domain, dat.Mailgun.APIKey)
-		} else {
-			mlr = mailer.NewSmtpMailer(dat.Smtp.Host, 587, dat.Smtp.User, dat.Smtp.Pass)
-		}
-
-		if !ask("We are ready to randomise and send the emails. Are YOU ready") {
-			fmt.Println("Not sending then.")
-			return
-		}
-
+		// pair before asking anything so that any problems surface straight away
 		pairs, err := app.Pair(dat.Participants, dat.Extras)
 		if err != nil {
-			log.Fatalf("Unable to pair: %v", err)
+			log.Fatalf("Unable to pair the participants:\n%v", err)
 		}
 
+		var mlr app.Mailer
+		if !isDryRun {
+			var description string
+			mlr, description = newMailer(dat)
+			if err := mlr.Verify(context.Background()); err != nil {
+				log.Fatalf("Unable to log in to %s: %v\n\nRun `santa check` once you've fixed it.", description, err)
+			}
+		}
+
+		switch {
+		case isDryRun:
+			fmt.Printf("Dry run, nothing will be sent.\n")
+		case to != "":
+			if !yes && !confirm(fmt.Sprintf("Send %d emails to %s (instead of the participants)", len(pairs), to)) {
+				fmt.Println("Nothing sent.")
+				return
+			}
+			fmt.Printf("Sending %d emails to %s:\n", len(pairs), to)
+		default:
+			if !yes && !confirm(fmt.Sprintf("Send %d emails to the participants? This can't be undone", len(pairs))) {
+				fmt.Println("Nothing sent.")
+				return
+			}
+			fmt.Printf("Sending %d emails:\n", len(pairs))
+		}
+
+		outputDir := newOutputDir(time.Now())
 		err = app.Send(
 			mlr,
 			pairs,
 			*dat.Template,
 			app.SendOpts{
-				AlwaysSendTo:   alwaysSendTo,
-				IsDebug:        isDebug,
+				To:             to,
+				IsDryRun:       isDryRun,
 				ShouldPrintPdf: shouldPrintPdf,
+				OutputDir:      outputDir,
 			},
 		)
-
 		if err != nil {
-			log.Fatalf(`There has been an error sending your emails: %v`, err)
+			log.Fatalf("\nThere has been an error sending your emails: %v\n\nThe emails are in %s/.", err, outputDir)
 		}
 
-		fmt.Println(`Your emails have been sent out successfully!`)
+		switch {
+		case isDryRun:
+			fmt.Printf("\nDone. The emails are in %s/ (opening them reveals the pairings).\n", outputDir)
+		case to != "":
+			fmt.Printf("\nDone! Each email's Reply-To is the participant it was meant for. Copies are in %s/.\n", outputDir)
+		default:
+			fmt.Printf("\nDone, all emails sent 🎅 Copies are in %s/, don't peek!\n", outputDir)
+		}
 	},
 }
 
 func init() {
-	sendCmd.Flags().BoolP(isDebugFlagName, "d", false, "turn the debug mode on (won't send emails)")
-	sendCmd.Flags().
-		StringP(alwaysSendToFlagName, "a", "", "send all emails to the given email address (for testing purposes)")
-	sendCmd.Flags().
-		BoolP(shouldPrintPdfFlagName, "p", false, "generate a printable pdf with the pairings")
+	sendCmd.Flags().BoolP(dryRunFlagName, "d", false, "do everything except sending the emails")
+	sendCmd.Flags().StringP(toFlagName, "t", "", "send all the emails to this address instead of the participants")
+	sendCmd.Flags().BoolP(pdfFlagName, "p", false, "also generate a printable PDF with all the emails")
+	sendCmd.Flags().BoolP(yesFlagName, "y", false, "don't ask for confirmation")
 }

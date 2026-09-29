@@ -9,8 +9,17 @@ Santa is a simple app written in Go that makes drawing your Secret Santa pairing
    - excluded recipients
    - predestined recipients
    - extra recipients with excluded givers
-3. Debug your setup and the randomisation of your pairings.
+3. Check your setup, preview the email and rehearse the whole thing without spoiling any surprises.
 4. Once ready, fire off your stealthy emails using a simple SMTP config or your Mailgun account.
+
+```sh
+santa init                        # create data.json, then edit it
+santa check                       # is everything ready? (sends nothing)
+santa preview --to you@email.com  # send yourself one sample email
+santa send --dry-run              # rehearse without sending anything
+santa send --to you@email.com     # rehearse by sending all emails to yourself
+santa send                        # the real thing 🎅
+```
 
 ## Setup 🎄
 
@@ -18,9 +27,10 @@ First of, download the app from [https://github.com/tadeaspetak/santa/releases/l
 
 > ⚠️ If you're on Mac, make the file executable with `chmod +x santa-mac`. When running, you'll have to override the security check and allow the app to run (click the ❔).
 
-1. Run the `init` command from your terminal, like `./santa-mac init`.
-2. This command generates a `data.json` file with basic sample config (TODO).
+1. Run the `init` command from your terminal, like `./santa-mac init` (the examples below just use `santa`).
+2. This command generates a `data.json` file with a sample family, email template and SMTP config. Use `--data other.json` with any command to use a different file.
 3. Use your favourite editor to edit the `data.json` file. The attached JSON schema will help you with the config.
+4. Run `santa check` any time to see whether your data and mailer are ready (more in [Before sending](#before-sending)).
 
 ### Mailer
 
@@ -42,6 +52,8 @@ Once done, enter your `smtp` config as follows:
   "pass": "xxx yyyy zzz"
 },
 ```
+
+The port defaults to `587`; set `"port"` if your server uses a different one. `santa check` tells you whether the login works without sending anything.
 
 ### Mailgun
 
@@ -148,37 +160,62 @@ Note that you might also want to adjust the `recipientsSeparator` in the `templa
 
 ## <a name="sending">Sending</a>
 
-Alright, so you've set up your Mailgun, template and participants, and now you're ready to send it all out 🦉 This is where the `send` command finally enters the game. Before using it, read on.
+Alright, so you've set up your mailer, template and participants, and now you're ready to send it all out 🦉 Before bombarding your loved ones with a barrage of potentially flawed emails, `santa`'s got your back.
 
-### Logs
+### Before sending
 
-Every email about to be sent is saved in a `santa-batch-%datetime-%giftgiver.txt` file:
+Work your way through these steps. None of them reveal who got whom (unless you peek into the output folder).
+
+1. **`santa check`** makes sure that
+   - your data file is valid,
+   - your preferences (predestined & excluded recipients, excluded givers) make a valid pairing possible,
+   - your mailer accepts your credentials. It only logs in, nothing is sent.
+2. **`santa preview`** prints a sample email in your terminal, using a made-up recipient ("Rudolph") instead of a real one. **`santa preview --to you@email.com`** sends that sample to your mailbox so you can see what it looks like in an actual email client.
+3. **`santa send --dry-run`** (`-d`) does everything except sending: it draws the pairings and writes each email into the [output folder](#output-folder). No mailer config is needed, so you can try this with the example data straight away.
+4. **`santa send --to you@email.com`** (`-t`) is a full rehearsal: the emails are generated as usual and actually sent, but all of them go to you. The `Reply-To` header of each shows the participant it was meant for. Each run draws new pairings, so there's nothing to spoil.
+
+### Let's roll already
+
+Run `santa send` without any flags. It tells you how many emails are about to go out and waits for your confirmation. Just pressing Enter cancels, so type `y` when you're sure. Use `--yes` (`-y`) to skip the question, e.g. in scripts.
+
+Good luck 🛷
+
+### Output folder
+
+Every `send` creates a `santa-batch-<datetime>` folder with a copy of each email, named after the gift-giver it's for (e.g. `mom@family.com.txt`):
 
 1. If you e.g. discover a typo in someone's email, you don't have to scrape the whole batch. You'd just look at who that particular gift-giver was supposed to get as a recipient and tell them. Not perfect, but heaps better than nothing.
-2. It's excellent for debugging.
+2. If sending fails halfway through (e.g. your mail provider hits a limit), the error tells you how many emails went out and the folder has the rest.
+3. It's excellent for debugging.
 
 Steer away from opening those files on real runs to keep yourself in the dark together with everyone else.
 
 ### Printable PDF
 
-If you'd like to generate a printable PDF when sending a batch, use the `-p` flag. The construction of the PDF is simple:
+If you'd like a printable PDF too, add the `--pdf` (`-p`) flag. It's saved as `emails.pdf` in the output folder. The construction of the PDF is simple:
 
 1. The first and the last pages are empty so that if you open / print this file, you won't see anything by mistake.
 2. All other pages have the gift-giver (=email recipient) at the top half of the page and the message (subject + body) at the bottom half. That way, you can always e.g. fold the pages in such a way that you won't see anything.
 
-See the [printed PDF for the example data](https://github.com/tadeaspetak/santa/blob/main/data.example.pdf). If you're only interested in generating such a PDF, run `send  -p -d` (more details on the `-d` flag below).
+See the [printed PDF for the example data](https://github.com/tadeaspetak/santa/blob/main/data.example.pdf). If you're only interested in the PDF, run `santa send --dry-run --pdf`.
 
-### Debugging & testing
+### All commands & flags
 
-Before bombarding your loved ones with a barrage of potentially flawed emails with a potentially flawed setup, `santa`'s got your back:
+| Command | Flags | |
+| --- | --- | --- |
+| `santa init` | | create a sample data file |
+| `santa check` | | validate data, pairing & mailer login, sends nothing |
+| `santa preview` | `--to`, `-t` | print a sample email, or send it to the given address |
+| `santa send` | `--dry-run`, `-d` | don't send anything |
+| | `--to`, `-t` | send all emails to the given address instead |
+| | `--pdf`, `-p` | also generate a printable PDF |
+| | `--yes`, `-y` | don't ask for confirmation |
+| `santa version` | | print the version |
 
-1. Use the `-d` flag with the `send` command for debugging purposes. That way, everything runs as per usual, but no emails are sent. Check the batch files to make sure your emails are correct and the results are what you expect them to be.
-2. When you're ready, you can do a test run with the `-a always.send.to@email.com` flag. The `-a` flag generates emails as per usual and actually sends them (unless `-d` is also used). But, it always sends them to the hardcoded email address, presumably you. You can find the gift-giver this would have normally been sent to in the `reply-to` header.
-
-### Let's roll already
-
-When you're ready to run the `send` command without any flags, good luck 🛷
+All commands accept `--data <path>` (default `data.json`) and `--help`.
 
 ## Dev notes
 
 To use the git hooks in the `hooks` directory, run `git config core.hooksPath hooks`.
+
+To rehearse the whole flow without any real emails going out, point the `smtp` config at a local mail catcher such as [Mailpit](https://mailpit.axllent.org) (`"host": "localhost", "port": 1025`, any `user` and `pass`).

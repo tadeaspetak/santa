@@ -1,6 +1,8 @@
 package mailer
 
 import (
+	"context"
+
 	"gopkg.in/gomail.v2"
 )
 
@@ -25,4 +27,13 @@ func (m smtpMailer) Send(sender, subject, body, recipient, replyTo string) error
 	}
 
 	return nil
+}
+
+// Verify connects and logs in to the SMTP server without sending anything.
+func (m smtpMailer) Verify(_ context.Context) error {
+	sender, err := m.dialer.Dial()
+	if err != nil {
+		return err
+	}
+	return sender.Close()
 }

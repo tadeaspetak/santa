@@ -12,7 +12,7 @@ run:
 
 test:
 	go test ./...
-	rm -f santa-batch-*
+	rm -rf santa-batch-*
 
 vet:
 	go vet ./...
@@ -29,8 +29,7 @@ build: lint
 
 clean:
 	rm -rf ./bin
-	rm -f santa-batch-*
-	rm -f internal/app/santa-batch-*
+	rm -rf santa-batch-*
 
 tools:
 	go install honnef.co/go/tools/cmd/staticcheck@2024.1.1
