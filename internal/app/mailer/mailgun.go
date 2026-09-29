@@ -11,9 +11,12 @@ type mailgunMailer struct {
 	gun *mailgun.MailgunImpl
 }
 
-func NewMailgunMailer(domain string, apiKey string) mailgunMailer {
+// MailgunEUAPIBase is the API base of Mailgun's EU region, the only one supported for now.
+const MailgunEUAPIBase = "https://api.eu.mailgun.net/v3"
+
+func NewMailgunMailer(domain, apiKey, apiBase string) mailgunMailer {
 	gun := mailgun.NewMailgun(domain, apiKey)
-	gun.SetAPIBase("https://api.eu.mailgun.net/v3")
+	gun.SetAPIBase(apiBase)
 	return mailgunMailer{gun: gun}
 }
 

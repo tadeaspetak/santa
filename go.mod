@@ -7,13 +7,11 @@ require (
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/k3a/html2text v1.2.1
 	github.com/mailgun/mailgun-go/v4 v4.15.2
-	github.com/manifoldco/promptui v0.9.0
 	github.com/spf13/cobra v1.8.1
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
 
 require (
-	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-chi/chi/v5 v5.0.8 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect

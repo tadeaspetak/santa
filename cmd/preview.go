@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -22,50 +21,64 @@ func sampleRecipients(dat data.Data) []data.Person {
 	return recipients
 }
 
-var previewCmd = &cobra.Command{
-	Use:   "preview",
-	Short: "Show a sample email, or send it to yourself with --to",
-	Long: `Render a single sample email from your template. It uses a made-up recipient ("Rudolph")
+func newPreviewCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "preview",
+		Short: "Show a sample email, or send it to yourself with --to",
+		Long: `Render a single sample email from your template. It uses a made-up recipient ("Rudolph")
 instead of a real one, so it doesn't reveal any pairings.
 
 Without flags, the email is printed in the terminal. With --to, it's sent to that address only,
 so you can see what it looks like in a real mailbox and make sure your mailer works.`,
-	Example: `  santa preview
+		Example: `  santa preview
   santa preview --to you@example.com`,
-	Run: func(cmd *cobra.Command, args []string) {
-		to := getFlag(cmd, previewToFlagName, cmd.Flags().GetString)
-		if to != "" {
-			if err := validateEmail(to); err != nil {
-				log.Fatalf("'%s' is not a valid email address.", to)
-			}
-		}
+		Args: cobra.NoArgs,
+		RunE: runPreview,
+	}
 
-		dat := loadData(cmd)
-		if err := validate(dat, to != ""); err != nil {
-			log.Fatalf("Invalid data!\n\n%s\n\nRun `santa check` for more details.", err)
-		}
+	cmd.Flags().StringP(previewToFlagName, "t", "", "send the sample email to this address")
 
-		subject, body := app.Render(*dat.Template, sampleRecipients(dat))
-
-		if to == "" {
-			fmt.Printf("From:    %s\n", dat.Template.Sender)
-			fmt.Printf("To:      each participant\n")
-			fmt.Printf("Subject: %s\n", subject)
-			fmt.Printf("%s\n%s\n%s\n", strings.Repeat("─", 60), strings.TrimSpace(app.HTMLToText(body)), strings.Repeat("─", 60))
-			fmt.Println("This is a sample, the real emails name each giver's actual recipient(s).")
-			fmt.Println("To see it in a real mailbox, run `santa preview --to <your email>`.")
-			return
-		}
-
-		mlr, description := newMailer(dat)
-		if err := mlr.Send(dat.Template.Sender, subject, body, to, to); err != nil {
-			log.Fatalf("Unable to send the sample email via %s: %v", description, err)
-		}
-		fmt.Printf("✓ Sample email sent to %s via %s\n", to, description)
-		fmt.Println("If it looks good, try `santa send --dry-run` next.")
-	},
+	return cmd
 }
 
-func init() {
-	previewCmd.Flags().StringP(previewToFlagName, "t", "", "send the sample email to this address")
+func runPreview(cmd *cobra.Command, args []string) error {
+	to, err := cmd.Flags().GetString(previewToFlagName)
+	if err != nil {
+		return err
+	}
+	if to != "" {
+		if err := validateEmail(to); err != nil {
+			return fmt.Errorf("'%s' is not a valid email address", to)
+		}
+	}
+
+	dat, _, err := loadData(cmd)
+	if err != nil {
+		return err
+	}
+	if err := validate(dat, to != ""); err != nil {
+		return fmt.Errorf("invalid data!\n\n%s\n\nRun `santa check` for more details", err)
+	}
+
+	out := cmd.OutOrStdout()
+	subject, body := app.Render(*dat.Template, sampleRecipients(dat))
+
+	if to == "" {
+		line := strings.Repeat("─", 60)
+		fmt.Fprintf(out, "From:    %s\n", dat.Template.Sender)
+		fmt.Fprintf(out, "To:      each participant\n")
+		fmt.Fprintf(out, "Subject: %s\n", subject)
+		fmt.Fprintf(out, "%s\n%s\n%s\n", line, strings.TrimSpace(app.HTMLToText(body)), line)
+		fmt.Fprintln(out, "This is a sample, the real emails name each giver's actual recipient(s).")
+		fmt.Fprintln(out, "To see it in a real mailbox, run `santa preview --to <your email>`.")
+		return nil
+	}
+
+	mlr, description := newMailer(dat)
+	if err := mlr.Send(dat.Template.Sender, subject, body, to, to); err != nil {
+		return fmt.Errorf("unable to send the sample email via %s: %w", description, err)
+	}
+	fmt.Fprintf(out, "✓ Sample email sent to %s via %s\n", to, description)
+	fmt.Fprintln(out, "If it looks good, try `santa send --dry-run` next.")
+	return nil
 }

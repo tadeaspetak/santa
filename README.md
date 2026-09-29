@@ -216,6 +216,8 @@ All commands accept `--data <path>` (default `data.json`) and `--help`.
 
 ## Dev notes
 
+Run the tests with `make test`. Besides unit tests, `cmd/e2e_test.go` runs whole `santa` commands against fake SMTP and Mailgun servers (see `internal/testutil`), so the full flow, prompts included, is tested without sending a single real email.
+
 To use the git hooks in the `hooks` directory, run `git config core.hooksPath hooks`.
 
 To rehearse the whole flow without any real emails going out, point the `smtp` config at a local mail catcher such as [Mailpit](https://mailpit.axllent.org) (`"host": "localhost", "port": 1025`, any `user` and `pass`).
