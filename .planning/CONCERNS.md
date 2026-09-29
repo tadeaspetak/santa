@@ -17,20 +17,28 @@ Found while mapping the code on 2026-09-29. Verify before acting.
 - Unused `var Validate` removed from `cmd/send.go`.
 - Unknown emails in `excludedRecipients` / `excludedGivers` and a predestined recipient excluded
   by the same giver were silently accepted → `validatePreferences` reports them.
+- CLI workflow rework: `check` / `preview` commands; `send` validates, pairs and verifies the
+  mailer login before its prompt; prompt defaults to No and is skipped on dry runs; dry runs need
+  no mailer config; per-run output folder; `--dry-run/--to/--pdf/--yes` (old flag names removed —
+  **breaking** for anyone with scripts, mention it in the next release notes); fixed nameless
+  `Usage:` line and log timestamps in errors; noisy Mailgun response output removed.
+- SMTP port configurable (`smtp.port`, default 587).
+- README "(TODO)" in Setup resolved.
 - staticcheck pinned to `2024.1.1` in CI and `make tools` (`latest` needs Go ≥ 1.26).
 
 ## Open
 
 - `Send` aborts on the first mail error leaving a partially-sent batch; the batch `.txt` files are
   the only recovery path (documented in README).
-- SMTP port hardcoded to 587 (`cmd/send.go`); Mailgun base hardcoded to EU
-  (`mailer/mailgun.go`) — US-region Mailgun accounts won't work.
+- Mailgun base hardcoded to EU (`mailer/mailgun.go`) — US-region Mailgun accounts won't work
+  (`check` will now at least report it as a login failure up front).
 - PDF strips all Unicode symbols (emojis) because fpdf core fonts can't render them.
-- Confirmation prompt appears even in `-d` mode, awkward for scripting.
 - Batch `.txt` files contain the pairing in plain text in the CWD — privacy relies on the
   organiser not opening them.
-- README Setup step 2 still says "(TODO)".
-- `data.example.json` has no mailer block, so it doesn't pass `validate()` as-is.
+- `data.example.json` has no mailer block: fine for dry runs/preview, `check` flags it.
+- No version bump / release yet for the new CLI; `Makefile` still says `v0.2.0`.
+- `cmd/` commands aren't covered end to end by tests (only helpers); they call `log.Fatalf`/
+  `os.Exit`, so testing them would need refactoring `Run` into error-returning functions.
 
 ## Ideas
 

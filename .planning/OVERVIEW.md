@@ -17,19 +17,22 @@ Repo: https://github.com/tadeaspetak/santa — binaries distributed via GitHub R
   `template.recipientsSeparator` (default `" and "`).
 - Email template with a single placeholder: `%{recipientSalutation}` (in `subject` and `body`).
   `body` is HTML and gets wrapped in `<html><body>…</body></html>`.
-- Mailers: SMTP (port 587 hardcoded) or Mailgun (EU region hardcoded). Mailgun wins if both set.
-- Safety/debug: `-d` dry run, `-a` redirect all mail to one address (real giver in `Reply-To`),
-  per-giver batch `.txt` logs, optional printable PDF (`-p`) with blank first/last pages so
-  pairings can be folded/hidden. See `data.example.pdf`.
+- Mailers: SMTP (`port` optional, default 587) or Mailgun (EU region hardcoded). Mailgun wins if
+  both set. Both implement `Verify` (log in without sending), used by `check` and before `send`.
+- Safety/rehearsal: `check`, `preview` (sample recipient "Rudolph", + "Blitzen" if there are
+  extras, so no pairing is revealed), `send -d` dry run, `send -t` redirect all mail to one address
+  (real giver in `Reply-To`), per-run output folder with per-giver `.txt` copies, optional
+  printable PDF (`-p`) with blank first/last pages so pairings can be folded/hidden. See
+  `data.example.pdf`.
 
 ## User flow
 
 1. Download the binary, run `./santa-mac init` → creates `data.json` pre-filled with sample data
    and a `$schema` pointing to `schema.json` on GitHub `main` (for editor autocompletion).
 2. Edit `data.json` (mailer creds, template, participants, extras).
-3. `send -d` (and optionally `-p`) to dry-run; inspect batch files.
-4. `send -a me@example.com` to test real delivery to yourself.
-5. `send` for real (interactive y/N confirmation via promptui).
+3. `check` → `preview` / `preview -t me@x` → `send -d [-p]` → `send -t me@x` (all rehearsals).
+4. `send` for real: validates, pairs and verifies the mailer login **before** asking
+   "Send N emails to the participants? This can't be undone [y/N]" (Enter cancels).
 
 The user-facing documentation is the root `README.md` — keep it in sync with behaviour changes.
 
@@ -52,3 +55,5 @@ The user-facing documentation is the root `README.md` — keep it in sync with b
   (`cmd/participants/*`, `internal/prompt`, `internal/validation`) in favour of hand-editing JSON
   guided by `schema.json`; added SMTP support.
 - Jul 2025: README/text fixes. Project is small and low-churn; mostly used seasonally.
+- Sep 2026: bug-fix + test pass (backtracking pairing, preference validation); CLI workflow
+  rework (`check`, `preview`, renamed `send` flags, output folders, default-No confirmation).

@@ -7,7 +7,7 @@ changes only reach users after merging to `main`).
 ```jsonc
 {
   "$schema": "https://raw.githubusercontent.com/tadeaspetak/santa/refs/heads/main/schema.json",
-  "smtp":    { "host": "...", "user": "...", "pass": "..." },   // either smtp…
+  "smtp":    { "host": "...", "port": 587, "user": "...", "pass": "..." }, // either smtp (port optional)…
   "mailgun": { "domain": "mg.example.com", "apiKey": "..." },    // …or mailgun (mailgun wins if both)
   "template": {
     "subject": "Find a gift for %{recipientSalutation}",        // required
@@ -29,7 +29,10 @@ changes only reach users after merging to `main`).
 ## Go validation (`validator` tags, run in `cmd/send.go` `validate()`)
 
 - `template` required; `subject`, `body` required; `sender` required + email format.
-- `mailgun` `required_without=Smtp`, `smtp` `required_without=Mailgun`; inner fields required.
+- `mailgun` `required_without=Smtp`, `smtp` `required_without=Mailgun`; inner fields required
+  (`smtp.port` optional, 1–65535). `validate(dat, requireMailer=false)` drops the
+  `required_without` errors, used by `send --dry-run` and `preview` without `--to`; `check`
+  reports a missing mailer as its own ✗ line.
 - `participants` required, `min=2`, `unique=Email`, each: `email` required+email, `salutation` required.
 - `extraRecipients` each: `salutation` required.
 - Custom messages only exist for the smtp/mailgun `required_without` case (`translations` map);

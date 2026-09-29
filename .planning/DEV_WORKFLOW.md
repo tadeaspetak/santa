@@ -26,9 +26,16 @@ Requires Go 1.23 (CI pins `1.23`). Install tooling with `make tools` (staticchec
 
 ## Safe manual testing
 
+Run from a scratch dir (the output folders land in the CWD):
+
 ```sh
-cp data.example.json /tmp/santa-test.json   # add an smtp or mailgun block (dummy values are fine for -d)
-go run . send -d -p --data /tmp/santa-test.json
+go build -o /tmp/santa-test/santa . && cd /tmp/santa-test
+./santa init && ./santa preview && ./santa send -d -p    # no mailer needed for any of these
 ```
-Run from a scratch dir or clean up the `santa-batch-*` files afterwards. `send` still shows the
-interactive confirmation prompt even with `-d`.
+
+**End-to-end with real SMTP, safely:** point `smtp` at a local sink, e.g.
+[Mailpit](https://mailpit.axllent.org) (`smtp` port 1025, UI on 8025) or a tiny Python socket
+server. `user`/`pass` must be non-empty to pass validation but are ignored when the server
+doesn't advertise `AUTH`. Then `check`, `preview -t`, `send -t`, `send -y` all work against it.
+Pipe answers into the prompt for scripting: `echo y | ./santa send -t me@x.com` (Enter = No).
+Ports < 1024 (and possibly 587) can't be bound inside the Claude Code sandbox; use e.g. 2525.
