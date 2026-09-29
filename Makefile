@@ -13,7 +13,6 @@ run:
 test:
 	go test ./...
 	rm -f santa-batch-*
-	rm -f internal/app/santa-batch-*
 
 vet:
 	go vet ./...
@@ -34,5 +33,5 @@ clean:
 	rm -f internal/app/santa-batch-*
 
 tools:
-	go install honnef.co/go/tools/cmd/staticcheck@latest
+	go install honnef.co/go/tools/cmd/staticcheck@2024.1.1
 	go mod tidy
