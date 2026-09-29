@@ -14,7 +14,7 @@ type Data struct {
 	Template     *Template     `json:"template"                  validate:"required"`
 	Mailgun      *Mailgun      `json:"mailgun,omitempty"         validate:"required_without=Smtp,omitempty"`
 	Smtp         *Smtp         `json:"smtp,omitempty"            validate:"required_without=Mailgun,omitempty"`
-	Participants []Participant `json:"participants,omitempty"    validate:"required,min=2,dive"`
+	Participants []Participant `json:"participants,omitempty"    validate:"required,min=2,unique=Email,dive"`
 	Extras       []Extra       `json:"extraRecipients,omitempty" validate:"dive"`
 }
 

@@ -16,8 +16,6 @@ import (
 	"github.com/tadeaspetak/santa/internal/data"
 )
 
-var Validate *validator.Validate
-
 var isDebugFlagName = "debug"
 var alwaysSendToFlagName = "alwaysSendTo"
 var shouldPrintPdfFlagName = "printPdf"
@@ -133,9 +131,14 @@ var sendCmd = &cobra.Command{
 			return
 		}
 
+		pairs, err := app.Pair(dat.Participants, dat.Extras)
+		if err != nil {
+			log.Fatalf("Unable to pair: %v", err)
+		}
+
 		err = app.Send(
 			mlr,
-			app.Pair(dat.Participants, dat.Extras),
+			pairs,
 			*dat.Template,
 			app.SendOpts{
 				AlwaysSendTo:   alwaysSendTo,

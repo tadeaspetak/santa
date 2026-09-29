@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -141,7 +140,7 @@ func Send(
 		if err != nil {
 			// Note: It's questionable what the best course of action is here. Is it better to continue
 			// with the current batch or return an error even though some emails may already have been sent out?
-			return fmt.Errorf("could not send email to %v: %v", recipient, err)
+			return fmt.Errorf("could not send email to %v: %w", recipient, err)
 		}
 
 		fmt.Printf("Email to %s sent successfully\n", recipient)
@@ -152,7 +151,7 @@ func Send(
 		pdf.AddPage()
 		err := pdf.OutputFileAndClose(fmt.Sprintf("santa-batch-%s.pdf", batchDate))
 		if err != nil {
-			log.Fatalf("Could not generate PDF: %v", err)
+			return fmt.Errorf("could not generate PDF: %v", err)
 		}
 	}
 

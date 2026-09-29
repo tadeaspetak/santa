@@ -27,7 +27,7 @@
     "participants": {
       "type": "array",
       "items": { "$ref": "#/$defs/participant" },
-      "minLength": 2
+      "minItems": 2
     },
     "template": {
       "type": "object",
@@ -38,9 +38,10 @@
         "recipientsSeparator": { "type": "string" }
       },
       "required": ["subject", "body", "sender"]
-    },
-    "required": ["participants", "template"]
+    }
   },
+  "required": ["participants", "template"],
+  "anyOf": [{ "required": ["smtp"] }, { "required": ["mailgun"] }],
   "$defs": {
     "participant": {
       "type": "object",
