@@ -41,7 +41,6 @@ The user-facing documentation is the root `README.md` — keep it in sync with b
 | Concern | Library |
 | --- | --- |
 | CLI | `github.com/spf13/cobra` |
-| Confirm prompt | `github.com/manifoldco/promptui` |
 | Validation | `github.com/go-playground/validator/v10` (struct tags) |
 | SMTP | `gopkg.in/gomail.v2` |
 | Mailgun | `github.com/mailgun/mailgun-go/v4` |
@@ -56,4 +55,6 @@ The user-facing documentation is the root `README.md` — keep it in sync with b
   guided by `schema.json`; added SMTP support.
 - Jul 2025: README/text fixes. Project is small and low-churn; mostly used seasonally.
 - Sep 2026: bug-fix + test pass (backtracking pairing, preference validation); CLI workflow
-  rework (`check`, `preview`, renamed `send` flags, output folders, default-No confirmation).
+  rework (`check`, `preview`, renamed `send` flags, output folders, default-No confirmation);
+  end-to-end tests with fake mail servers; `promptui` replaced by a plain `[y/N]` line read;
+  version bumped to v1.0.0.

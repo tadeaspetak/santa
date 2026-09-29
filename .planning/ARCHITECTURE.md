@@ -3,16 +3,20 @@
 ```
 main.go                     → cmd.Execute()
 cmd/
-  root.go                   RootCmd (+ workflow in Long help), --data flag, loadData(),
-                            newMailer(), getFlag(); log.SetFlags(0) in Execute
+  root.go                   NewRootCmd() builds a fresh tree (+ workflow in Long help), --data
+                            flag, loadData(), newMailer(), `mailgunAPIBase` var (tests override);
+                            Execute() prints "Error: …" to stderr and exits 1
   validate.go               validate(dat, requireMailer) + "translations" map; validateEmail()
   init.go                   `init`: refuses if file exists; writes sample data; prints next step
-  check.go                  `check`: validate → app.Pair (discarded) → mailer.Verify; exit 1 on ✗
+  check.go                  `check`: validate → app.Pair (discarded) → mailer.Verify;
+                            returns errChecksFailed on any ✗
   preview.go                `preview`: app.Render with sampleRecipients(); print or send (-t)
   send.go                   `send`: flags → validate → Pair → Verify → confirm() → app.Send;
-                            newOutputDir() (unique santa-batch-<datetime>[-N])
+                            confirm() reads a line ([y/N]); newOutputDir() (unique folder)
+  e2e_test.go               end-to-end: run(t, stdin, args...) on a temp CWD with example data
+                            + fake servers; asserts emails as received form a valid pairing
   validate_test.go          table tests for validate() incl. dry-run mode and the example data
-  send_test.go              newOutputDir()
+  send_test.go              newOutputDir(), confirm()
   version.go                `version`: prints version.Version
   version/version.go        `Version` var, injected via -ldflags in Makefile
 internal/
@@ -26,10 +30,18 @@ internal/
     send.go                 Send(), Render(), HTMLToText(), Mailer interface, SendOpts, PDF
     utils.go                getRandomIndexInArray, shuffle (math/rand), getParticipantsByEmail
     mailer/smtp.go          smtpMailer (gomail)      — implements app.Mailer
-    mailer/mailgun.go       mailgunMailer (EU API)   — implements app.Mailer
+    mailer/mailgun.go       mailgunMailer            — implements app.Mailer; API base injected
+                            (cmd passes MailgunEUAPIBase)
+    mailer/mailer_test.go   Verify/Send for both mailers against the fake servers
     pair_test.go            invariant (property) tests, deterministic, distribution, errors,
                             extras balance, no input mutation
     send_test.go            Send()/Render() with a mock Mailer; testOpts(t) → temp OutputDir
+  testutil/                 test-only helpers (never imported by non-test code):
+    smtp.go                 NewSMTPServer(t, user, pass): real SMTP on 127.0.0.1:<random>,
+                            AUTH PLAIN, records Messages(), FailFor(addr) rejects a recipient
+    mailgun.go              NewMailgunServer(t, domain, key): httptest fake of GET domain +
+                            POST messages, records Messages(); use .APIBase
+    testutil.go             Message type, Chdir(t, dir) (Go 1.23 has no t.Chdir)
 schema_test.go              structural regression test for schema.json (package main)
 ```
 
@@ -59,8 +71,10 @@ written if the user cancels.
 
 ## Conventions
 
-- `internal/app` returns errors (sentinels like `errNoValidPairing`, wrapped with `%w`, so tests
-  use `errors.Is`); only the `cmd` layer calls `log.Fatalf`.
+- Nothing calls `log.Fatalf`/`os.Exit` except `cmd.Execute`. `internal/app` returns errors
+  (sentinels like `errNoValidPairing`, wrapped with `%w`, so tests use `errors.Is`); commands use
+  `RunE` and write via `cmd.OutOrStdout()` / read via `cmd.InOrStdin()` so tests can drive them.
+- New commands: add a `newXCmd()` constructor, register it in `NewRootCmd`, add e2e cases.
 - `app.Send` writes into `SendOpts.OutputDir` and prints to `SendOpts.Out`; tests use
   `testOpts(t, …)` (temp dir + `io.Discard`). The CLI picks the dir via `newOutputDir` in the CWD.
 - User-facing CLI output: `✓`/`✗` status lines, and every message ends by suggesting the next

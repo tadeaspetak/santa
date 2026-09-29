@@ -22,6 +22,9 @@ Found while mapping the code on 2026-09-29. Verify before acting.
   no mailer config; per-run output folder; `--dry-run/--to/--pdf/--yes` (old flag names removed —
   **breaking** for anyone with scripts, mention it in the next release notes); fixed nameless
   `Usage:` line and log timestamps in errors; noisy Mailgun response output removed.
+- End-to-end tests: `cmd` refactored to `NewRootCmd`/`RunE`; fake SMTP & Mailgun servers in
+  `internal/testutil`; `promptui` dropped for a plain `[y/N]` prompt; mailers now tested.
+- Version bumped to `v1.0.0` in the Makefile.
 - SMTP port configurable (`smtp.port`, default 587).
 - README "(TODO)" in Setup resolved.
 - staticcheck pinned to `2024.1.1` in CI and `make tools` (`latest` needs Go ≥ 1.26).
@@ -30,15 +33,16 @@ Found while mapping the code on 2026-09-29. Verify before acting.
 
 - `Send` aborts on the first mail error leaving a partially-sent batch; the batch `.txt` files are
   the only recovery path (documented in README).
-- Mailgun base hardcoded to EU (`mailer/mailgun.go`) — US-region Mailgun accounts won't work
-  (`check` will now at least report it as a login failure up front).
+- Mailgun is EU-only (`mailer.MailgunEUAPIBase` passed by `cmd`) — US-region accounts won't work;
+  `check` reports it as a login failure up front. Accepted by the owner for now (2026-09-29).
 - PDF strips all Unicode symbols (emojis) because fpdf core fonts can't render them.
 - Batch `.txt` files contain the pairing in plain text in the CWD — privacy relies on the
   organiser not opening them.
 - `data.example.json` has no mailer block: fine for dry runs/preview, `check` flags it.
-- No version bump / release yet for the new CLI; `Makefile` still says `v0.2.0`.
-- `cmd/` commands aren't covered end to end by tests (only helpers); they call `log.Fatalf`/
-  `os.Exit`, so testing them would need refactoring `Run` into error-returning functions.
+- `v1.0.0` not tagged/released yet (manual: build, tag, upload binaries). Release notes should
+  call out the renamed `send` flags.
+- Fake servers only speak plain SMTP + AUTH PLAIN; STARTTLS/implicit TLS (465) paths of gomail
+  aren't exercised by tests.
 
 ## Ideas
 

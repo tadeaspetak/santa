@@ -1,8 +1,8 @@
 # .planning — agent context for `santa`
 
 Start here. These files are a map of the project for future agents/contributors, written 2026-09-29
-(updated the same day after the bug-fix/test pass and the CLI workflow rework; last release tag
-`v0.2.0` predates both). Verify against the code if something looks stale.
+(updated the same day after the bug-fix/test pass, the CLI workflow rework and the end-to-end
+test suite; `Makefile` version is `v1.0.0`, last pushed release tag is `v0.2.0`). Verify against the code if something looks stale.
 
 | File | Read it when you need… |
 | --- | --- |
@@ -26,7 +26,8 @@ Start here. These files are a map of the project for future agents/contributors,
 - Every `send` writes a `santa-batch-<datetime>[-N]/` folder with `<giverEmail>.txt` per giver
   (+ `emails.pdf`) as an audit log.
 - Core logic is in `internal/app` (`pair.go`, `extras.go`, `send.go`); tests live next to it.
-  Every package with logic has tests (`cmd`, `internal/app`, `internal/data`, root `schema_test.go`).
+  Every package has tests; `cmd/e2e_test.go` runs whole commands against fake SMTP/Mailgun servers
+  from `internal/testutil`, so real sending is covered without any network.
 
 ## Hard rules for agents
 
@@ -35,5 +36,5 @@ Start here. These files are a map of the project for future agents/contributors,
   `.gitignore` ignores `*.json` on purpose (with exceptions for `data.example.json`, `schema.json`).
 - **Never run `send` without `-d`** unless the user explicitly asks — it emails real people.
   `check` and `preview` without `-t` are always safe (`check` only logs in to the mailer).
-  For end-to-end tests, point `smtp` at a local sink (see DEV_WORKFLOW.md).
+  For end-to-end behaviour, prefer adding a case to `cmd/e2e_test.go` over manual runs.
 - Adding a new JSON file to the repo? It will be ignored by git unless you add a `!` exception.
