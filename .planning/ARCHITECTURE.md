@@ -16,6 +16,7 @@ internal/
   data/data_test.go         save/load round trip, load errors, example file
   app/
     pair.go                 Pair() + pairParticipants() — randomised backtracking pairing
+    preferences.go          validatePreferences() — cross-reference checks of the preferences
     extras.go               pairExtras() — assigns extra recipients to givers
     send.go                 Send(), Mailer interface, SendOpts, PDF generation, batch files
     utils.go                getRandomIndexInArray, shuffle (math/rand), getParticipantsByEmail

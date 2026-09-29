@@ -37,11 +37,15 @@ changes only reach users after merging to `main`).
 
 ### Not caught by the validator
 
-- That `excludedRecipients` / `excludedGivers` reference existing participants (typos are
-  silently ignored).
-- `predestinedRecipient` problems are caught by `app.Pair` (not the validator) and returned as
-  errors: unknown email, giver predestined to themselves, one recipient predestined by two givers.
-  A predestined recipient that's also in the giver's `excludedRecipients` is not flagged.
+Cross-references between entries are checked by `app.validatePreferences`
+(`internal/app/preferences.go`), run at the start of `app.Pair`. It reports **all** problems at
+once (`errors.Join`, each with the offending email + who referenced it):
+
+- `excludedRecipients` / `excludedGivers` email that isn't a participant;
+- `predestinedRecipient` that isn't a participant, is the giver themselves, is also in the same
+  giver's `excludedRecipients`, or is predestined by several givers.
+
+Excluding yourself in `excludedRecipients` is allowed (harmless no-op).
 
 ## JSON schema (`schema.json`)
 

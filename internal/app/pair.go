@@ -2,15 +2,11 @@ package app
 
 import (
 	"errors"
-	"fmt"
 	"slices"
 
 	"github.com/tadeaspetak/santa/internal/data"
 )
 
-var errUnknownPredestinedRecipient = errors.New("predestined recipient does not exist")
-var errSelfPredestinedRecipient = errors.New("participant cannot be their own predestined recipient")
-var errDuplicatePredestinedRecipient = errors.New("participant is a predestined recipient of multiple givers")
 var errNoValidPairing = errors.New(
 	"no valid pairing exists, adjust your data, such as predestined or excluded recipients, to make pairing participants possible",
 )
@@ -20,38 +16,19 @@ type giverWithRecipients struct {
 	recipients []data.Person
 }
 
-// getPredestinedEmails returns the emails of all predestined recipients, making sure they are valid.
-func getPredestinedEmails(participants []data.Participant) ([]string, error) {
-	participantsByEmail := getParticipantsByEmail(participants)
-	predestinedEmails := make([]string, 0)
-	for _, p := range participants {
-		predestined := p.PredestinedRecipient
-		if predestined == "" {
-			continue
-		}
-		if _, ok := participantsByEmail[predestined]; !ok {
-			return nil, fmt.Errorf("%w: %s", errUnknownPredestinedRecipient, predestined)
-		}
-		if predestined == p.Email {
-			return nil, fmt.Errorf("%w: %s", errSelfPredestinedRecipient, predestined)
-		}
-		if slices.Contains(predestinedEmails, predestined) {
-			return nil, fmt.Errorf("%w: %s", errDuplicatePredestinedRecipient, predestined)
-		}
-		predestinedEmails = append(predestinedEmails, predestined)
-	}
-	return predestinedEmails, nil
-}
-
 // pairParticipants assigns a recipient to each participant. It goes through the givers in order,
 // trying their potential recipients in random order and backtracking whenever it reaches a dead
 // end, so a pairing is always found if one exists.
+//
+// It expects the preferences to have been checked by `validatePreferences`.
 func pairParticipants(participants []data.Participant) ([]giverWithRecipients, error) {
-	predestinedEmails, err := getPredestinedEmails(participants)
-	if err != nil {
-		return nil, err
-	}
 	participantsByEmail := getParticipantsByEmail(participants)
+	predestinedEmails := make([]string, 0)
+	for _, p := range participants {
+		if p.PredestinedRecipient != "" {
+			predestinedEmails = append(predestinedEmails, p.PredestinedRecipient)
+		}
+	}
 
 	// recipients start as everyone except the predestined ones
 	remainingRecipients := map[string]data.Participant{}
@@ -107,6 +84,10 @@ func pairParticipants(participants []data.Participant) ([]giverWithRecipients, e
 }
 
 func Pair(participants []data.Participant, extraRecipients []data.Extra) ([]giverWithRecipients, error) {
+	if err := validatePreferences(participants, extraRecipients); err != nil {
+		return nil, err
+	}
+
 	paired, err := pairParticipants(participants)
 	if err != nil {
 		return nil, err

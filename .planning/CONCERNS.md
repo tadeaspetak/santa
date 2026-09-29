@@ -15,12 +15,12 @@ Found while mapping the code on 2026-09-29. Verify before acting.
   `anyOf` smtp/mailgun. Regression: `schema_test.go`.
 - `log.Fatalf` inside `internal/app` → returned errors (PDF, pairing, extras).
 - Unused `var Validate` removed from `cmd/send.go`.
+- Unknown emails in `excludedRecipients` / `excludedGivers` and a predestined recipient excluded
+  by the same giver were silently accepted → `validatePreferences` reports them.
 - staticcheck pinned to `2024.1.1` in CI and `make tools` (`latest` needs Go ≥ 1.26).
 
 ## Open
 
-- `excludedRecipients` / `excludedGivers` referencing non-existent emails are silently ignored.
-- Predestined recipient that's also excluded by the same giver isn't flagged.
 - `Send` aborts on the first mail error leaving a partially-sent batch; the batch `.txt` files are
   the only recovery path (documented in README).
 - SMTP port hardcoded to 587 (`cmd/send.go`); Mailgun base hardcoded to EU

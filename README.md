@@ -89,7 +89,9 @@ The `participants` array defines the participants in your Secret Santa. Each par
 - `email` (required): participant email address (must be unique)
 - `salutation` (required): a salutation used when replacing the `%{recipientSalutation}` variable in the [email template](#email-template)
 - `excludedRecipients` (optional): a list of emails of the recipients that should **not** be considered valid for this gift-giver
-- `predestinedRecipient` (optional): an email of the recipient this gift-giver should be assigned
+- `predestinedRecipient` (optional): an email of the recipient this gift-giver should be assigned (can't be excluded by the same gift-giver, and each participant can be predestined for one gift-giver at most)
+
+All emails in `excludedRecipients` and `predestinedRecipient` must belong to other participants. Any typos are reported before anything is sent.
 
 In the example below, `Mom` and `Dad` won't ever need to give a gift to each other; they like it that way. `Emily` explicitly asked to give a gift to `Auntie` since she has the perfect idea, so we've made `Auntie` her predestined recipient.
 
@@ -127,7 +129,7 @@ Say that you have babies, toddlers or small kids in your family. You might want 
 
 That's where the `extraRecipients` property comes in. You define those who will be assigned to the gift-givers (`participants`) as gift-recipients, but they will **not** be giving presents to anyone.
 
-You can use the `excludedGivers` property on each of the `extraRecipients` to make sure certain people will **not** get that particular extra recipient assigned.
+You can use the `excludedGivers` property on each of the `extraRecipients` to make sure certain people will **not** get that particular extra recipient assigned. Just like above, these must be emails of existing participants.
 
 ```json
 "extraRecipients": [

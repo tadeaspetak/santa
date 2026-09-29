@@ -6,8 +6,8 @@ Entry point: `app.Pair(participants, extras)` in `internal/app/pair.go`.
 
 Randomised depth-first search with backtracking:
 
-1. `getPredestinedEmails` validates predestined recipients and returns an error for an unknown
-   email, a self-assignment, or a recipient predestined by several givers.
+1. `Pair` first runs `validatePreferences` (see DATA_MODEL.md), so the search can assume every
+   referenced email exists and predestined recipients are consistent.
 2. Pool of `remainingRecipients` = everyone who is **not** somebody's predestined recipient.
 3. `assign(i)` walks givers **in input order**:
    - predestined → assign directly;
@@ -42,4 +42,5 @@ inputs (e.g. 2 predestined of 4 people failed ~1/1000 runs) — caught by `TestP
 - `TestPairDeterministic`: constraints force one result.
 - `TestPairDistribution`: every valid outcome is hit at least once, nothing else appears
   (outcomes compared via `outcomeKey`, e.g. `p1>p2|p2>p3+e4|p3>p1`).
-- `TestPairErrors`, `TestPairExtrasBalanced`, `TestPairDoesNotMutateInput`: regressions.
+- `TestPairErrors` (one case per sentinel error), `TestPairReportsAllPreferenceErrors`,
+  `TestPairExtrasBalanced`, `TestPairDoesNotMutateInput`: regressions.

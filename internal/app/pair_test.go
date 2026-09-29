@@ -274,6 +274,13 @@ func TestPairErrors(t *testing.T) {
 	excludesP2 := participant("p1")
 	excludesP2.ExcludedRecipients = []string{"p2"}
 
+	excludesUnknown := participant("p1")
+	excludesUnknown.ExcludedRecipients = []string{"p2", "typo@example.com"}
+
+	predestinedAndExcluded := participant("p1")
+	predestinedAndExcluded.PredestinedRecipient = "p2"
+	predestinedAndExcluded.ExcludedRecipients = []string{"p2"}
+
 	// p4 can only give to p1, but p1 is predestined for p2
 	predestinedP1 := participant("p2")
 	predestinedP1.PredestinedRecipient = "p1"
@@ -300,6 +307,22 @@ func TestPairErrors(t *testing.T) {
 			name:         "duplicate predestined recipient",
 			participants: []data.Participant{predestinedP3, alsoPredestinedP3, participant("p3")},
 			expected:     errDuplicatePredestinedRecipient,
+		},
+		{
+			name:         "predestined recipient also excluded",
+			participants: []data.Participant{predestinedAndExcluded, participant("p2"), participant("p3")},
+			expected:     errExcludedPredestinedRecipient,
+		},
+		{
+			name:         "unknown excluded recipient",
+			participants: []data.Participant{excludesUnknown, participant("p2"), participant("p3")},
+			expected:     errUnknownExcludedRecipient,
+		},
+		{
+			name:         "unknown excluded giver",
+			participants: []data.Participant{participant("p1"), participant("p2")},
+			extras:       []data.Extra{extra("e1", "p1", "typo@example.com")},
+			expected:     errUnknownExcludedGiver,
 		},
 		{
 			name:         "impossible exclusions",
@@ -397,5 +420,44 @@ func TestPairDoesNotMutateInput(t *testing.T) {
 	}
 	if !reflect.DeepEqual(extras, extrasBefore) {
 		t.Fatalf("extras mutated: %v", extras)
+	}
+}
+
+// TestPairReportsAllPreferenceErrors makes sure all the problems are reported at once,
+// each with enough detail to find it in the data file.
+func TestPairReportsAllPreferenceErrors(t *testing.T) {
+	mom := participant("mom")
+	mom.ExcludedRecipients = []string{"dda"}
+	dad := participant("dad")
+	dad.PredestinedRecipient = "mom"
+	dad.ExcludedRecipients = []string{"mom"}
+	emily := participant("emily")
+	emily.PredestinedRecipient = "mom"
+
+	_, err := Pair(
+		[]data.Participant{mom, dad, emily},
+		[]data.Extra{extra("toddler", "jkae")},
+	)
+
+	for _, expected := range []error{
+		errUnknownExcludedRecipient,
+		errExcludedPredestinedRecipient,
+		errDuplicatePredestinedRecipient,
+		errUnknownExcludedGiver,
+	} {
+		if !errors.Is(err, expected) {
+			t.Errorf("expected the error to include %q", expected)
+		}
+	}
+
+	for _, detail := range []string{
+		"dda (excluded by mom)",
+		"mom (by dad)",
+		"mom (predestined for dad and emily)",
+		"jkae (excluded for toddler)",
+	} {
+		if err == nil || !strings.Contains(err.Error(), detail) {
+			t.Errorf("expected the error to contain %q, got:\n%v", detail, err)
+		}
 	}
 }
