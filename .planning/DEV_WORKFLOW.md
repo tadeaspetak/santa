@@ -26,8 +26,10 @@ Requires Go 1.23 (CI pins `1.23`). Install tooling with `make tools` (staticchec
 
 - Version string lives in `Makefile` (`VERSION := v1.0.0`) and is injected into
   `cmd/version.Version` via `-ldflags -X`. `go run .` without the Makefile prints an empty version.
-- Tags `v0.0.2` … `v0.2.0` exist (`v1.0.0` bumped in the Makefile, not tagged yet). Releases are **manual**: bump `VERSION`, `make build`, tag,
-  upload `bin/*` to a GitHub Release (no release workflow). No linux or darwin/arm64 build target.
+- Tags `v0.0.2` … `v1.0.0` exist. Releases are **manual**: bump `VERSION`, commit
+  (`chore: release vX.Y.Z`), wait for green CI, `make build`, annotated tag on that commit, then
+  `gh release create vX.Y.Z bin/santa-mac bin/santa-win.exe --title "Release vX.Y.Z: …"`
+  (asset names are referenced by the README). No linux or darwin/arm64 build target.
 
 ## Safe manual testing
 

@@ -24,7 +24,7 @@ Found while mapping the code on 2026-09-29. Verify before acting.
   `Usage:` line and log timestamps in errors; noisy Mailgun response output removed.
 - End-to-end tests: `cmd` refactored to `NewRootCmd`/`RunE`; fake SMTP & Mailgun servers in
   `internal/testutil`; `promptui` dropped for a plain `[y/N]` prompt; mailers now tested.
-- Version bumped to `v1.0.0` in the Makefile.
+- Released `v1.0.0` (2026-09-29) with notes calling out the renamed `send` flags.
 - SMTP port configurable (`smtp.port`, default 587).
 - README "(TODO)" in Setup resolved.
 - staticcheck pinned to `2024.1.1` in CI and `make tools` (`latest` needs Go ≥ 1.26).
@@ -39,8 +39,6 @@ Found while mapping the code on 2026-09-29. Verify before acting.
 - Batch `.txt` files contain the pairing in plain text in the CWD — privacy relies on the
   organiser not opening them.
 - `data.example.json` has no mailer block: fine for dry runs/preview, `check` flags it.
-- `v1.0.0` not tagged/released yet (manual: build, tag, upload binaries). Release notes should
-  call out the renamed `send` flags.
 - Fake servers only speak plain SMTP + AUTH PLAIN; STARTTLS/implicit TLS (465) paths of gomail
   aren't exercised by tests.
 

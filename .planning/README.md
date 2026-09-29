@@ -2,7 +2,7 @@
 
 Start here. These files are a map of the project for future agents/contributors, written 2026-09-29
 (updated the same day after the bug-fix/test pass, the CLI workflow rework and the end-to-end
-test suite; `Makefile` version is `v1.0.0`, last pushed release tag is `v0.2.0`). Verify against the code if something looks stale.
+test suite; latest release is `v1.0.0`). Verify against the code if something looks stale.
 
 | File | Read it when you need… |
 | --- | --- |
