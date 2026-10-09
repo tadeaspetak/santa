@@ -32,8 +32,8 @@ Requires Go 1.23 (CI pins `1.23`). Install tooling with `make tools` (staticchec
   `cmd/version.Version` via `-ldflags -X`. `go run .` without the Makefile prints an empty version.
 - Tags `v0.0.2` … `v1.0.0` exist (`v1.0.1` adds `template.senderName`). Releases are built by the
   release workflow: bump `VERSION`, commit (`chore: release vX.Y.Z`), push and wait for green CI,
-  then `git tag -a vX.Y.Z` on that commit with the release notes as the tag message (first line
-  is a summary) and `git push origin vX.Y.Z`. Polish the notes on GitHub afterwards if needed.
+  then `git tag -a --cleanup=verbatim vX.Y.Z` on that commit with the release notes as the tag
+  message (without `--cleanup=verbatim` git drops `#` heading lines as comments) and `git push origin vX.Y.Z`. Polish the notes on GitHub afterwards if needed.
   Asset names `santa-mac` / `santa-win.exe` are referenced by the README; no linux or
   darwin/arm64 builds yet.
 
