@@ -65,7 +65,11 @@ func runPreview(cmd *cobra.Command, args []string) error {
 
 	if to == "" {
 		line := strings.Repeat("─", 60)
-		fmt.Fprintf(out, "From:    %s\n", dat.Template.Sender)
+		from := dat.Template.Sender
+		if dat.Template.SenderName != "" {
+			from = fmt.Sprintf("%s <%s>", dat.Template.SenderName, dat.Template.Sender)
+		}
+		fmt.Fprintf(out, "From:    %s\n", from)
 		fmt.Fprintf(out, "To:      each participant\n")
 		fmt.Fprintf(out, "Subject: %s\n", subject)
 		fmt.Fprintf(out, "%s\n%s\n%s\n", line, strings.TrimSpace(app.HTMLToText(body)), line)
@@ -75,7 +79,7 @@ func runPreview(cmd *cobra.Command, args []string) error {
 	}
 
 	mlr, description := newMailer(dat)
-	if err := mlr.Send(dat.Template.Sender, subject, body, to, to); err != nil {
+	if err := mlr.Send(dat.Template.From(), subject, body, to, to); err != nil {
 		return fmt.Errorf("unable to send the sample email via %s: %w", description, err)
 	}
 	fmt.Fprintf(out, "✓ Sample email sent to %s via %s\n", to, description)

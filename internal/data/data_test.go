@@ -86,3 +86,22 @@ func TestLoadExampleData(t *testing.T) {
 		t.Errorf("expected Emily to have a predestined recipient, got %+v", dat.Participants[3])
 	}
 }
+
+func TestTemplateFrom(t *testing.T) {
+	tests := []struct {
+		name     string
+		template Template
+		expected string
+	}{
+		{"no name", Template{Sender: "santa@example.com"}, "santa@example.com"},
+		{"ascii name", Template{Sender: "santa@example.com", SenderName: "Secret Santa"}, `"Secret Santa" <santa@example.com>`},
+		{"unicode name", Template{Sender: "santa@example.com", SenderName: "Tajný los 🦌"}, "=?utf-8?q?Tajn=C3=BD_los_=F0=9F=A6=8C?= <santa@example.com>"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.template.From(); got != tt.expected {
+				t.Errorf("expected %q, got %q", tt.expected, got)
+			}
+		})
+	}
+}

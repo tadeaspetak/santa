@@ -13,6 +13,7 @@ changes only reach users after merging to `main`).
     "subject": "Find a gift for %{recipientSalutation}",        // required
     "body": "<p>… %{recipientSalutation} …</p>",                 // required, HTML
     "sender": "santa@mg.example.com",                            // required, must be an email
+    "senderName": "Santa",                                       // optional, display name in `From`
     "recipientsSeparator": " and "                               // optional, default " and "
   },
   "participants": [                                              // required, min 2
@@ -29,6 +30,7 @@ changes only reach users after merging to `main`).
 ## Go validation (`validator` tags, run in `cmd/send.go` `validate()`)
 
 - `template` required; `subject`, `body` required; `sender` required + email format.
+  `senderName` is free text; `Template.From()` combines the two (RFC 2047-encoded) for the mailers.
 - `mailgun` `required_without=Smtp`, `smtp` `required_without=Mailgun`; inner fields required
   (`smtp.port` optional, 1–65535). `validate(dat, requireMailer=false)` drops the
   `required_without` errors, used by `send --dry-run` and `preview` without `--to`; `check`

@@ -3,6 +3,7 @@ package data
 import (
 	"encoding/json"
 	"io"
+	"net/mail"
 	"os"
 	"strconv"
 	"strings"
@@ -23,7 +24,17 @@ type Template struct {
 	Body                string `json:"body,omitempty"                validate:"required"`
 	Subject             string `json:"subject,omitempty"             validate:"required"`
 	Sender              string `json:"sender,omitempty"              validate:"required,email"`
+	SenderName          string `json:"senderName,omitempty"`
 	RecipientsSeparator string `json:"recipientsSeparator,omitempty"`
+}
+
+// From returns the `From` address of the emails, i.e. the sender with its display name if there's one.
+// Non-ASCII names are encoded as per RFC 2047.
+func (t Template) From() string {
+	if t.SenderName == "" {
+		return t.Sender
+	}
+	return (&mail.Address{Name: t.SenderName, Address: t.Sender}).String()
 }
 
 // Mailgun contains the Mailgun-related config.

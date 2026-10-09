@@ -2,6 +2,7 @@ package mailer
 
 import (
 	"context"
+	"net/mail"
 	"reflect"
 	"testing"
 
@@ -87,6 +88,27 @@ func TestMailerSend(t *testing.T) {
 			}
 			if len(messages()) != 1 {
 				t.Fatalf("expected nothing else to be sent, got %+v", messages())
+			}
+		})
+	}
+}
+
+func TestMailerSendWithSenderName(t *testing.T) {
+	for _, tt := range mailerCases {
+		t.Run(tt.name, func(t *testing.T) {
+			valid, _, messages := tt.setup(t)
+
+			from := (&mail.Address{Name: "Tajný vánoční los 🦌", Address: "santa@example.com"}).String()
+			if err := valid.Send(from, "s", "b", "dad@example.com", "r@example.com"); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			address, err := new(mail.AddressParser).Parse(messages()[0].From)
+			if err != nil {
+				t.Fatalf("unable to parse the received sender %q: %v", messages()[0].From, err)
+			}
+			if address.Name != "Tajný vánoční los 🦌" || address.Address != "santa@example.com" {
+				t.Fatalf("unexpected sender %+v", address)
 			}
 		})
 	}

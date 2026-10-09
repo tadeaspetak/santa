@@ -6,6 +6,7 @@ package cmd
 import (
 	"bytes"
 	"errors"
+	"net/mail"
 	"os"
 	"path/filepath"
 	"slices"
@@ -85,6 +86,18 @@ func assertNotContains(t *testing.T, s string, unexpected ...string) {
 	}
 }
 
+// assertSender checks that the email comes from the template's sender, with its display name.
+func assertSender(t *testing.T, dat data.Data, m testutil.Message) {
+	t.Helper()
+	address, err := new(mail.AddressParser).Parse(m.From)
+	if err != nil {
+		t.Fatalf("unable to parse the sender %q: %v", m.From, err)
+	}
+	if address.Address != dat.Template.Sender || address.Name != dat.Template.SenderName {
+		t.Errorf("unexpected sender %q", m.From)
+	}
+}
+
 // assertValidPairingEmails checks that the emails, as received by the mail server, make up a valid
 // pairing for the data: every giver got exactly one email, every participant and extra is someone's
 // recipient exactly once, and all the preferences are honoured. `giverOf` tells who the email is
@@ -116,9 +129,7 @@ func assertValidPairingEmails(
 		giver := giverOf(m)
 		givers = append(givers, giver)
 
-		if m.From != dat.Template.Sender {
-			t.Errorf("unexpected sender %s", m.From)
-		}
+		assertSender(t, dat, m)
 		if !strings.HasPrefix(m.Subject, subjectPrefix) {
 			t.Fatalf("unexpected subject %q", m.Subject)
 		}
@@ -337,7 +348,8 @@ func TestE2EPreview(t *testing.T) {
 			t.Fatalf("expected a single email, got %+v", messages)
 		}
 		m := messages[0]
-		if m.To != "me@example.com" || m.From != dat.Template.Sender || m.Subject != subjectPrefix+"Rudolph and Blitzen" {
+		assertSender(t, dat, m)
+		if m.To != "me@example.com" || m.Subject != subjectPrefix+"Rudolph and Blitzen" {
 			t.Fatalf("unexpected email %+v", m)
 		}
 	})

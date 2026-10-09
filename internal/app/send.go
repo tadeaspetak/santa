@@ -160,7 +160,7 @@ func Send(
 		}
 
 		err = mlr.Send(
-			template.Sender,
+			template.From(),
 			subject,
 			body,
 			recipient,

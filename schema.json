@@ -36,6 +36,7 @@
         "subject": { "type": "string" },
         "body": { "type": "string" },
         "sender": { "type": "string" },
+        "senderName": { "type": "string", "title": "Name shown instead of the sender's email" },
         "recipientsSeparator": { "type": "string" }
       },
       "required": ["subject", "body", "sender"]

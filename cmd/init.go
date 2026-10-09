@@ -40,6 +40,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 			Subject:             "🎄 Find a gift for %{recipientSalutation}",
 			Body:                "<p>Hi</p><p>Come up with something lovely for %{recipientSalutation}.</p><p>Happy hunting,<br/>Your Santa 🎅</p>",
 			Sender:              "your.email+santa@gmail.com",
+			SenderName:          "Santa",
 			RecipientsSeparator: " and ",
 		},
 		Participants: []data.Participant{

@@ -81,6 +81,7 @@ This is where the `template` section enters the scene:
 1. In `subject` and `body`, you have the `%{recipientSalutation}` variable at your disposal. This will be replaced by the value of the `salutation` from the recipient(s).
 2. `body` is automatically wrapped in `<html><body>`.
 3. When using Mailgun, `sender` must be on the domain from the [Mailgun section](#mailgun).
+   `senderName` (optional) is the name mailboxes show instead of the `sender` address.
 4. The `recipientsSeparator` separates multiple gift-recipients. This is only important in cases where [extra recipients](#extra-recipients) have been supplied.
 
 Consider the following as a reasonable starting point:
@@ -90,6 +91,7 @@ Consider the following as a reasonable starting point:
   "subject": "🎄 Find a gift for %{recipientSalutation}",
   "body": "<p>Hi</p><p>Come up with something lovely for %{recipientSalutation}.</p><p>Happy hunting,<br/>Your Santa 🎅</p>",
   "sender": "santa@mg.your-domain.com",
+  "senderName": "Santa",
   "recipientsSeparator": " and "
 }
 ```
