@@ -1,9 +1,9 @@
 APP_NAME := santa
-VERSION := v1.0.0
+VERSION := v1.0.1
 # note: get the variable name using go tool nm <your binary> | grep <your variable>
 VERSION_LDFLAG = -ldflags "-X github.com/tadeaspetak/santa/cmd/version.Version=$(VERSION)"
 
-.PHONY: all run build test fmt lint clean tools
+.PHONY: all run build binaries test fmt lint clean tools
 
 all: run
 
@@ -23,7 +23,10 @@ fmt: vet
 lint: fmt
 	staticcheck ./...
 
-build: lint
+build: lint binaries
+
+# the release workflow runs this directly, CI covers the lint
+binaries:
 	env GOOS=darwin GOARCH=amd64 go build $(VERSION_LDFLAG) -o ./bin/santa-mac .
 	env GOOS=windows GOARCH=amd64 go build $(VERSION_LDFLAG) -o ./bin/santa-win.exe .
 

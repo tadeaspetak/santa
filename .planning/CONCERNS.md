@@ -27,6 +27,8 @@ Found while mapping the code on 2026-09-29. Verify before acting.
 - Released `v1.0.0` (2026-09-29) with notes calling out the renamed `send` flags.
 - SMTP port configurable (`smtp.port`, default 587).
 - README "(TODO)" in Setup resolved.
+- Optional `template.senderName` (display name in `From`, 2026-10-09, for v1.0.1).
+- Release GitHub Action builds and publishes the binaries on tag push (2026-10-09).
 - staticcheck pinned to `2024.1.1` in CI and `make tools` (`latest` needs Go ≥ 1.26).
 
 ## Open
@@ -46,5 +48,5 @@ Found while mapping the code on 2026-09-29. Verify before acting.
 
 - Deterministic seed flag (`--seed`) for reproducible debugging/tests.
 - Upfront validation pass with friendly messages for all reference errors.
-- Configurable SMTP port / Mailgun region; linux + darwin/arm64 builds; release GitHub Action.
+- Configurable Mailgun region; linux + darwin/arm64 builds.
 - More template variables (e.g. `%{giverSalutation}`).

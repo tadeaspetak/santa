@@ -2,7 +2,8 @@
 
 Start here. These files are a map of the project for future agents/contributors, written 2026-09-29
 (updated the same day after the bug-fix/test pass, the CLI workflow rework and the end-to-end
-test suite; latest release is `v1.0.0`). Verify against the code if something looks stale.
+test suite; latest release is `v1.0.0`, `v1.0.1` prepared 2026-10-09 with `senderName` and the
+release workflow). Verify against the code if something looks stale.
 
 | File | Read it when you need… |
 | --- | --- |

@@ -7,11 +7,15 @@ Requires Go 1.23 (CI pins `1.23`). Install tooling with `make tools` (staticchec
 | `make run PARAM="send -d"` | `go run` with version ldflag; pass subcommand via `PARAM` |
 | `make test` | `go test ./...` (tests use temp dirs; also deletes stray root `santa-batch-*`) |
 | `make vet` / `make fmt` / `make lint` | chained: lint → fmt → vet (`staticcheck ./...`) |
-| `make build` | lint, then cross-compile `bin/santa-mac` (darwin/amd64) and `bin/santa-win.exe` |
+| `make build` | lint, then `make binaries` |
+| `make binaries` | cross-compile `bin/santa-mac` (darwin/amd64) and `bin/santa-win.exe`, no lint |
 | `make clean` | remove `bin/` and batch files |
 
 - Git hooks: `git config core.hooksPath hooks` → `hooks/pre-commit` runs `make lint && make test`.
 - CI (`.github/workflows/go.yml`, on push/PR to `main`): `make fmt`, `make test`, staticcheck.
+- Release (`.github/workflows/release.yml`, on pushing a `v*` tag): checks the tag equals the
+  Makefile `VERSION`, `make test`, `make binaries`, then `gh release create` with both binaries
+  and the annotated tag's message as the notes (`--notes-from-tag`).
 - Tests (all offline, ~5s, `-race` clean):
   - `cmd/e2e_test.go`: whole commands (`init`, `check`, `preview`, `send` incl. prompt answers,
     `--to`, `--dry-run`, wrong credentials, failures halfway, Mailgun) against fake servers.
@@ -24,12 +28,14 @@ Requires Go 1.23 (CI pins `1.23`). Install tooling with `make tools` (staticchec
 
 ## Versioning & release
 
-- Version string lives in `Makefile` (`VERSION := v1.0.0`) and is injected into
+- Version string lives in `Makefile` (`VERSION := v1.0.1`) and is injected into
   `cmd/version.Version` via `-ldflags -X`. `go run .` without the Makefile prints an empty version.
-- Tags `v0.0.2` … `v1.0.0` exist. Releases are **manual**: bump `VERSION`, commit
-  (`chore: release vX.Y.Z`), wait for green CI, `make build`, annotated tag on that commit, then
-  `gh release create vX.Y.Z bin/santa-mac bin/santa-win.exe --title "Release vX.Y.Z: …"`
-  (asset names are referenced by the README). No linux or darwin/arm64 build target.
+- Tags `v0.0.2` … `v1.0.0` exist (`v1.0.1` adds `template.senderName`). Releases are built by the
+  release workflow: bump `VERSION`, commit (`chore: release vX.Y.Z`), push and wait for green CI,
+  then `git tag -a vX.Y.Z` on that commit with the release notes as the tag message (first line
+  is a summary) and `git push origin vX.Y.Z`. Polish the notes on GitHub afterwards if needed.
+  Asset names `santa-mac` / `santa-win.exe` are referenced by the README; no linux or
+  darwin/arm64 builds yet.
 
 ## Safe manual testing
 
